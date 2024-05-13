@@ -3,7 +3,7 @@
   "id": "ffeb39c1-fd80-4333-b572-9de0f1e3dae1",
   "name": "AppcircleDistribute",
   "friendlyName": "Appcircle distribute",
-  "description": "Distribute builds to users or test groups with Appcircle",
+  "description": "Efficiently distribute application builds to users or testing groups using Appcircle's robust platform.",
   "helpMarkDown": "",
   "category": "Utility",
   "author": "appcircle",
@@ -21,7 +21,7 @@
       "label": "Appcircle Access Token",
       "defaultValue": "",
       "required": true,
-      "helpMarkDown": "Access token for connection to appcircle"
+      "helpMarkDown": "Provide the Appcircle access token to authenticate connections to Appcircle services. This token allows your Azure DevOps pipeline to interact with Appcircle for distributing applications."
     },
     {
       "name": "profileId",
@@ -29,7 +29,7 @@
       "label": "Profile Id",
       "defaultValue": "",
       "required": true,
-      "helpMarkDown": "Distribution Profile Id"
+      "helpMarkDown": "Enter the ID of the Appcircle distribution profile. This ID uniquely identifies the profile under which your applications will be distributed."
     },
     {
       "name": "appPath",
@@ -37,7 +37,7 @@
       "label": "App Path",
       "defaultValue": "",
       "required": true,
-      "helpMarkDown": "for iOS .ipa file or .xcarchive file or android apk or app bundle path"
+      "helpMarkDown": "Specify the path to your application file. For iOS, this can be a .ipa or .xcarchive file path. For Android, specify the .apk or .appbundle file path."
     },
     {
       "name": "message",
@@ -45,7 +45,7 @@
       "label": "Message",
       "defaultValue": "",
       "required": false,
-      "helpMarkDown": "Message to Testers"
+      "helpMarkDown": "Optional message to include with the distribution to provide additional information to testers or users receiving the build."
     }
   ],
   "execution": {

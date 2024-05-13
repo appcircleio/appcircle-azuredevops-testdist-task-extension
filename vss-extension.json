@@ -9,7 +9,7 @@
       "id": "Microsoft.VisualStudio.Services"
     }
   ],
-  "description": "Tools for releasing build to users or testers using Appcircle",
+  "description": "A suite of tools designed to streamline the distribution of builds to users or testers, simplifying the release process through Appcircle integration.",
   "categories": ["Azure Pipelines"],
   "icons": {
     "default": "images/extension-icon.png"
