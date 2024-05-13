@@ -1,0 +1,44 @@
+{
+  "manifestVersion": 1,
+  "id": "build-release-task",
+  "name": "Appcircle distribution",
+  "version": "0.0.32",
+  "publisher": "Appcircle",
+  "targets": [
+    {
+      "id": "Microsoft.VisualStudio.Services"
+    }
+  ],
+  "description": "Tools for releasing build to users or testers using Appcircle",
+  "categories": ["Azure Pipelines"],
+  "icons": {
+    "default": "images/extension-icon.png"
+  },
+  "files": [
+    {
+      "path": "buildandreleasetask"
+    },
+    {
+      "path": "images",
+      "addressable": true
+    }
+  ],
+  "content": {
+    "details": {
+      "path": "README.md"
+    },
+    "license": {
+      "path": "LICENSE"
+    }
+  },
+  "contributions": [
+    {
+      "id": "custom-build-release-task",
+      "type": "ms.vss-distributed-task.task",
+      "targets": ["ms.vss-distributed-task.tasks"],
+      "properties": {
+        "name": "buildandreleasetask"
+      }
+    }
+  ]
+}

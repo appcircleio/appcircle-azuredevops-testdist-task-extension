@@ -1,0 +1,56 @@
+{
+  "$schema": "https://raw.githubusercontent.com/Microsoft/azure-pipelines-task-lib/master/tasks.schema.json",
+  "id": "ffeb39c1-fd80-4333-b572-9de0f1e3dae1",
+  "name": "AppcircleDistribute",
+  "friendlyName": "Appcircle distribute",
+  "description": "Distribute builds to users or test groups with Appcircle",
+  "helpMarkDown": "",
+  "category": "Utility",
+  "author": "appcircle",
+  "version": {
+    "Major": 0,
+    "Minor": 1,
+    "Patch": 0
+  },
+  "visibility": ["Build", "Release"],
+  "instanceNameFormat": "Appcircle Distribute",
+  "inputs": [
+    {
+      "name": "accessToken",
+      "type": "string",
+      "label": "Appcircle Access Token",
+      "defaultValue": "",
+      "required": true,
+      "helpMarkDown": "Access token for connection to appcircle"
+    },
+    {
+      "name": "profileId",
+      "type": "string",
+      "label": "Profile Id",
+      "defaultValue": "",
+      "required": true,
+      "helpMarkDown": "Distribution Profile Id"
+    },
+    {
+      "name": "appPath",
+      "type": "string",
+      "label": "App Path",
+      "defaultValue": "",
+      "required": true,
+      "helpMarkDown": "for iOS .ipa file or .xcarchive file or android apk or app bundle path"
+    },
+    {
+      "name": "message",
+      "type": "string",
+      "label": "Message",
+      "defaultValue": "",
+      "required": false,
+      "helpMarkDown": "Message to Testers"
+    }
+  ],
+  "execution": {
+    "Node": {
+      "target": "index.js"
+    }
+  }
+}
