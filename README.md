@@ -1,6 +1,6 @@
 # Appcircle Distribute
 
-Appcircle, enterprise-Grade Fully Automated Mobile DevOps Platform, simplifies the testing distribution of builds to test groups. With comprehensive control over distribution details such as testers and build access, our platform ensures additionally secure authentication via username/password.
+Appcircle, enterprise-Grade Fully Automated Mobile DevOps Platform, simplifies the testing distribution of builds to test groups. With comprehensive control over distribution details such as testers and build access, our platform ensures additionally secure authentication via username/password. If you want to get support or more information please [contact us](https://appcircle.io/contact)
 
 Efficiently distribute test binaries or beta versions using Appcircle, featuring seamless IPA distribution, APK distribution capabilities. Streamline your testing process with our versatile tool designed to optimize your distribution workflow
 
