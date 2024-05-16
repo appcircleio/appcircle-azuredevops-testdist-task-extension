@@ -2,12 +2,27 @@
   "manifestVersion": 1,
   "id": "build-release-task",
   "name": "Appcircle distribution",
-  "version": "0.0.38",
+  "version": "0.0.41",
   "publisher": "Appcircle",
+  "public": true,
   "targets": [
     {
       "id": "Microsoft.VisualStudio.Services"
     }
+  ],
+  "tags": [
+    "distribution",
+    "android",
+    "ios",
+    "beta",
+    "beta testing",
+    "testing",
+    "test",
+    "binary",
+    "artifact",
+    "ipa",
+    "apk",
+    "mobile"
   ],
   "description": "A suite of tools designed to streamline the distribution of builds to users or testers, simplifying the release process through Appcircle integration.",
   "categories": ["Azure Pipelines"],
