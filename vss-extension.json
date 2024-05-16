@@ -2,7 +2,7 @@
   "manifestVersion": 1,
   "id": "build-release-task",
   "name": "Appcircle distribution",
-  "version": "0.0.32",
+  "version": "0.0.38",
   "publisher": "Appcircle",
   "targets": [
     {
