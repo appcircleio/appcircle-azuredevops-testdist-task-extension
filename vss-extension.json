@@ -1,8 +1,8 @@
 {
   "manifestVersion": 1,
   "id": "build-release-task",
-  "name": "Appcircle distribution",
-  "version": "0.0.41",
+  "name": "Testing Distribution",
+  "version": "0.0.53",
   "publisher": "Appcircle",
   "public": true,
   "targets": [
@@ -11,20 +11,16 @@
     }
   ],
   "tags": [
-    "distribution",
-    "android",
-    "ios",
-    "beta",
-    "beta testing",
-    "testing",
-    "test",
-    "binary",
-    "artifact",
-    "ipa",
-    "apk",
-    "mobile"
+    "Testing Distribution",
+    "Binary Distribution",
+    "Beta Distribution",
+    "Mobile",
+    "iOS",
+    "Android",
+    "IPA",
+    "APK/AAB"
   ],
-  "description": "A suite of tools designed to streamline the distribution of builds to users or testers, simplifying the release process through Appcircle integration.",
+  "description": "Appcircle Test Distribution allows you to distribute your mobile apps to your test groups",
   "categories": ["Azure Pipelines"],
   "icons": {
     "default": "images/extension-icon.png"

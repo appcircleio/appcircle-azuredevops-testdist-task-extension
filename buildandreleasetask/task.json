@@ -1,8 +1,8 @@
 {
   "$schema": "https://raw.githubusercontent.com/Microsoft/azure-pipelines-task-lib/master/tasks.schema.json",
   "id": "ffeb39c1-fd80-4333-b572-9de0f1e3dae1",
-  "name": "AppcircleDistribute",
-  "friendlyName": "Appcircle distribute",
+  "name": "AppcircleTestingDistribution",
+  "friendlyName": "Appcircle Testing Distribution",
   "description": "Efficiently distribute application builds to users or testing groups using Appcircle's robust platform.",
   "helpMarkDown": "",
   "category": "Utility",
@@ -13,15 +13,15 @@
     "Patch": 0
   },
   "visibility": ["Build", "Release"],
-  "instanceNameFormat": "Appcircle Distribute",
+  "instanceNameFormat": "Appcircle Testing Distribution",
   "inputs": [
     {
       "name": "accessToken",
       "type": "string",
-      "label": "Appcircle Access Token",
+      "label": "Appcircle Personal API Token",
       "defaultValue": "",
       "required": true,
-      "helpMarkDown": "Provide the Appcircle access token to authenticate connections to Appcircle services. This token allows your Azure DevOps pipeline to interact with Appcircle for distributing applications."
+      "helpMarkDown": "Provide the Appcircle Personal API Token to authenticate connections to Appcircle services. This token allows your Azure DevOps pipeline to interact with Appcircle for distributing applications."
     },
     {
       "name": "profileId",
