@@ -26,11 +26,6 @@ async function run() {
       message: isVariableName(message) ? tl.getVariable(message) : message,
     };
 
-    console.log("Access Token From Variable: ", inputs.accessToken);
-    console.log("ProfileID: ", inputs.profileId);
-    console.log("appPath: ", inputs.appPath);
-    console.log("Message: ", inputs.message);
-
     installACNpmPackage(() => {
       appcircleLogin(inputs.accessToken, () => {
         uploadArtifact(inputs);
