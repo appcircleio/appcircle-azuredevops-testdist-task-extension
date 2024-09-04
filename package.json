@@ -1,15 +1,19 @@
 {
   "name": "appcircle-azuredevops-testdist-task-extension",
-  "version": "1.0.0",
+  "version": "0.0.69",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "package": "tsc ./buildandreleasetask/index.ts",
+    "package:watch": "tsc --watch ./buildandreleasetask/index.ts"
   },
   "keywords": [],
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "azure-devops-extension-sdk": "^4.0.2"
+    "axios": "^1.7.7",
+    "azure-devops-extension-sdk": "^4.0.2",
+    "node-fetch": "^3.3.2"
   }
 }
