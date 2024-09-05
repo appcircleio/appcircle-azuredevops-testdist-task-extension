@@ -1,7 +1,7 @@
 {
   "manifestVersion": 1,
   "id": "build-release-task-dev",
-  "name": "Testing Distribution - Dev",
+  "name": "Appcircle Testing Distribution - Dev",
   "version": "0.0.77",
   "publisher": "Appcircle",
   "public": false,
