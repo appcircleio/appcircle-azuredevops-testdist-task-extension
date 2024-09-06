@@ -2,7 +2,7 @@
   "$schema": "https://raw.githubusercontent.com/Microsoft/azure-pipelines-task-lib/master/tasks.schema.json",
   "id": "ffeb39c1-fd80-4333-b572-9de0f1e3dae1",
   "name": "AppcircleTestingDistribution",
-  "friendlyName": "Appcircle Testing Distribution - Dev",
+  "friendlyName": "Appcircle Testing Distribution",
   "description": "Efficiently distribute application builds to users or testing groups using Appcircle's robust platform.",
   "helpMarkDown": "",
   "category": "Utility",
@@ -10,7 +10,7 @@
   "version": {
     "Major": 0,
     "Minor": 0,
-    "Patch": 77
+    "Patch": 56
   },
   "visibility": ["Build", "Release"],
   "instanceNameFormat": "Appcircle Testing Distribution",
