@@ -1,10 +1,10 @@
 {
   "manifestVersion": 1,
-  "id": "build-release-task",
-  "name": "Appcircle Testing Distribution",
-  "version": "0.0.56",
+  "id": "build-release-task-dev",
+  "name": "Appcircle Testing Distribution - Dev",
+  "version": "0.0.77",
   "publisher": "Appcircle",
-  "public": true,
+  "public": false,
   "targets": [
     {
       "id": "Microsoft.VisualStudio.Services"

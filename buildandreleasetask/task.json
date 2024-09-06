@@ -1,35 +1,43 @@
 {
   "$schema": "https://raw.githubusercontent.com/Microsoft/azure-pipelines-task-lib/master/tasks.schema.json",
   "id": "ffeb39c1-fd80-4333-b572-9de0f1e3dae1",
-  "name": "AppcircleDistribute",
-  "friendlyName": "Appcircle distribute",
+  "name": "AppcircleTestingDistribution",
+  "friendlyName": "Appcircle Testing Distribution",
   "description": "Efficiently distribute application builds to users or testing groups using Appcircle's robust platform.",
   "helpMarkDown": "",
   "category": "Utility",
   "author": "appcircle",
   "version": {
     "Major": 0,
-    "Minor": 1,
-    "Patch": 0
+    "Minor": 0,
+    "Patch": 56
   },
   "visibility": ["Build", "Release"],
-  "instanceNameFormat": "Appcircle Distribute",
+  "instanceNameFormat": "Appcircle Testing Distribution",
   "inputs": [
     {
-      "name": "accessToken",
+      "name": "personalAPIToken",
       "type": "string",
-      "label": "Appcircle Access Token",
+      "label": "Appcircle Personal API Token",
       "defaultValue": "",
       "required": true,
-      "helpMarkDown": "Provide the Appcircle access token to authenticate connections to Appcircle services. This token allows your Azure DevOps pipeline to interact with Appcircle for distributing applications."
+      "helpMarkDown": "Provide the Appcircle Personal API Token to authenticate connections to Appcircle services. This token allows your Azure DevOps pipeline to interact with Appcircle for distributing applications."
     },
     {
-      "name": "profileId",
+      "name": "profileName",
       "type": "string",
-      "label": "Profile Id",
+      "label": "Testing Distribution Profile Name",
       "defaultValue": "",
       "required": true,
-      "helpMarkDown": "Enter the ID of the Appcircle distribution profile. This ID uniquely identifies the profile under which your applications will be distributed."
+      "helpMarkDown": "Enter the profile name of the Appcircle distribution profile. This name uniquely identifies the profile under which your applications will be distributed"
+    },
+    {
+      "name": "createProfileIfNotExists",
+      "type": "boolean",
+      "label": "Create Profile If Not Exists",
+      "defaultValue": "false",
+      "required": false,
+      "helpMarkDown": "Specify whether to create a new app profile if one does not already exist."
     },
     {
       "name": "appPath",
@@ -37,7 +45,7 @@
       "label": "App Path",
       "defaultValue": "",
       "required": true,
-      "helpMarkDown": "Specify the path to your application file. For iOS, this can be a .ipa or .xcarchive file path. For Android, specify the .apk or .appbundle file path."
+      "helpMarkDown": "Specify the path to your application file. Supported file extensions are .ipa, .apk, .aab, and .zip."
     },
     {
       "name": "message",
@@ -45,11 +53,11 @@
       "label": "Message",
       "defaultValue": "",
       "required": false,
-      "helpMarkDown": "Optional message to include with the distribution to provide additional information to testers or users receiving the build."
+      "helpMarkDown": "Message to include with the distribution to provide additional information to testers or users receiving the build"
     }
   ],
   "execution": {
-    "Node": {
+    "Node16": {
       "target": "index.js"
     }
   }

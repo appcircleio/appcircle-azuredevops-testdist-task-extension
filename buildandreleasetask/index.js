@@ -1,4 +1,15 @@
 "use strict";
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -36,81 +47,263 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 exports.__esModule = true;
+exports.checkTaskStatus = exports.uploadArtifact = exports.getProfileId = exports.getDistributionProfiles = exports.createDistributionProfile = exports.UploadServiceHeaders = exports.appcircleApi = exports.getToken = void 0;
 var tl = require("azure-pipelines-task-lib/task");
-var child_process_1 = require("child_process");
+var axios_1 = require("axios");
+var fs = require("fs");
+var FormData = require("form-data");
 function run() {
-    var _a;
+    var _a, _b;
     return __awaiter(this, void 0, void 0, function () {
-        var accessToken, profileId, appPath, message, inputs_1;
-        return __generator(this, function (_b) {
-            try {
-                accessToken = tl.getInputRequired("accessToken");
-                profileId = tl.getInputRequired("profileId");
-                appPath = tl.getInputRequired("appPath");
-                message = (_a = tl.getInput("message")) !== null && _a !== void 0 ? _a : "";
-                inputs_1 = {
-                    accessToken: isVariableName(accessToken)
-                        ? tl.getVariable(accessToken)
-                        : accessToken,
-                    profileId: isVariableName(profileId)
-                        ? tl.getVariable(profileId)
-                        : profileId,
-                    appPath: isVariableName(appPath) ? tl.getVariable(appPath) : appPath,
-                    message: isVariableName(message) ? tl.getVariable(message) : message
-                };
-                console.log("Access Token From Variable: ", inputs_1.accessToken);
-                console.log("ProfileID: ", inputs_1.profileId);
-                console.log("appPath: ", inputs_1.appPath);
-                console.log("Message: ", inputs_1.message);
-                installACNpmPackage(function () {
-                    appcircleLogin(inputs_1.accessToken, function () {
-                        uploadArtifact(inputs_1);
-                    });
-                });
-                tl.setResult(tl.TaskResult.Succeeded, "Artifact Uploaded Successfully!");
+        var personalAPIToken, profileName, createProfileIfNotExists, appPath, message, validExtensions, fileExtension, loginResponse, profileIdFromName, uploadResponse, err_1;
+        return __generator(this, function (_c) {
+            switch (_c.label) {
+                case 0:
+                    _c.trys.push([0, 7, , 8]);
+                    personalAPIToken = tl.getInputRequired("personalAPIToken");
+                    profileName = tl.getInputRequired("profileName");
+                    createProfileIfNotExists = (_a = tl.getBoolInput("createProfileIfNotExists")) !== null && _a !== void 0 ? _a : false;
+                    appPath = tl.getInputRequired("appPath");
+                    message = (_b = tl.getInput("message")) !== null && _b !== void 0 ? _b : "";
+                    validExtensions = [".ipa", ".apk", ".aab", ".zip"];
+                    fileExtension = appPath.slice(appPath.lastIndexOf(".")).toLowerCase();
+                    if (!validExtensions.includes(fileExtension)) {
+                        tl.setResult(tl.TaskResult.Failed, "Invalid file extension for '".concat(appPath, "'. Please use one of the following:\n") +
+                            "- Android: .apk or .aab\n" +
+                            "- iOS: .ipa or .zip(.xcarchive)");
+                        return [2 /*return*/];
+                    }
+                    // Validate if the file exists
+                    if (!fs.existsSync(appPath)) {
+                        tl.setResult(tl.TaskResult.Failed, "The specified file '".concat(appPath, "' does not exist."));
+                        return [2 /*return*/];
+                    }
+                    return [4 /*yield*/, getToken(personalAPIToken)];
+                case 1:
+                    loginResponse = _c.sent();
+                    console.log("Logged in to Appcircle successfully");
+                    UploadServiceHeaders.token = loginResponse.access_token;
+                    return [4 /*yield*/, getProfileId(profileName, createProfileIfNotExists)];
+                case 2:
+                    profileIdFromName = _c.sent();
+                    return [4 /*yield*/, uploadArtifact({
+                            message: message,
+                            app: appPath,
+                            distProfileId: profileIdFromName
+                        })];
+                case 3:
+                    uploadResponse = _c.sent();
+                    if (!!uploadResponse.taskId) return [3 /*break*/, 4];
+                    tl.setResult(tl.TaskResult.Failed, "Task ID is not found in the upload response");
+                    return [3 /*break*/, 6];
+                case 4: return [4 /*yield*/, checkTaskStatus(loginResponse.access_token, uploadResponse.taskId)];
+                case 5:
+                    _c.sent();
+                    console.log("".concat(appPath, " uploaded to Appcircle successfully"));
+                    _c.label = 6;
+                case 6:
+                    tl.setResult(tl.TaskResult.Succeeded, "".concat(appPath, " uploaded to Appcircle successfully"));
+                    return [3 /*break*/, 8];
+                case 7:
+                    err_1 = _c.sent();
+                    console.log(err_1);
+                    tl.setResult(tl.TaskResult.Failed, err_1.message);
+                    return [3 /*break*/, 8];
+                case 8: return [2 /*return*/];
             }
-            catch (err) {
-                tl.setResult(tl.TaskResult.Failed, err.message);
-            }
-            return [2 /*return*/];
         });
     });
 }
 run();
-function installACNpmPackage(callback) {
-    (0, child_process_1.exec)("npm install -g @appcircle/cli", function (error) {
-        if (error) {
-            console.log("error: ".concat(error.message));
-            tl.setResult(tl.TaskResult.Failed, error.message);
-            return;
-        }
-        callback();
+/* API */
+function getToken(pat) {
+    return __awaiter(this, void 0, void 0, function () {
+        var params, response, error_1;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    params = new URLSearchParams();
+                    params.append("pat", pat);
+                    _a.label = 1;
+                case 1:
+                    _a.trys.push([1, 3, , 4]);
+                    return [4 /*yield*/, axios_1["default"].post("https://auth.appcircle.io/auth/v1/token", params.toString(), {
+                            headers: {
+                                accept: "application/json",
+                                "content-type": "application/x-www-form-urlencoded"
+                            }
+                        })];
+                case 2:
+                    response = _a.sent();
+                    return [2 /*return*/, response.data];
+                case 3:
+                    error_1 = _a.sent();
+                    if (axios_1["default"].isAxiosError(error_1)) {
+                        console.error("Axios error:", error_1.message);
+                        if (error_1.response) {
+                            console.error("Response data:", error_1.response.data);
+                            console.error("Response status:", error_1.response.status);
+                        }
+                    }
+                    else {
+                        console.error("Unexpected error:", error_1);
+                    }
+                    throw error_1;
+                case 4: return [2 /*return*/];
+            }
+        });
     });
 }
-function appcircleLogin(accessToken, callback) {
-    (0, child_process_1.exec)("appcircle login --pat=".concat(accessToken), function (error) {
-        if (error) {
-            console.log("error: ".concat(error.message));
-            tl.setResult(tl.TaskResult.Failed, error.message);
-            return;
-        }
-        callback();
-    });
-}
-function isVariableName(input) {
-    var variablePrefix = "$(";
-    var variableSuffix = ")";
-    if (input.startsWith(variablePrefix) && input.endsWith(variableSuffix)) {
-        return true;
+exports.getToken = getToken;
+var API_HOSTNAME = "https://api.appcircle.io";
+exports.appcircleApi = axios_1["default"].create({
+    baseURL: API_HOSTNAME.endsWith("/") ? API_HOSTNAME : "".concat(API_HOSTNAME, "/")
+});
+var UploadServiceHeaders = /** @class */ (function () {
+    function UploadServiceHeaders() {
     }
-    return false;
-}
-function uploadArtifact(inputs) {
-    (0, child_process_1.exec)("appcircle testing-distribution upload --app=".concat(inputs === null || inputs === void 0 ? void 0 : inputs.appPath, " --distProfileId=").concat(inputs === null || inputs === void 0 ? void 0 : inputs.profileId, " --message=\"").concat(inputs === null || inputs === void 0 ? void 0 : inputs.message, "\""), function (error) {
-        console.log("Upload callback");
-        if (error) {
-            console.log("error: ".concat(error.message));
-            tl.setResult(tl.TaskResult.Failed, error.message);
-        }
+    UploadServiceHeaders.token = "";
+    UploadServiceHeaders.getHeaders = function () {
+        var response = {
+            accept: "application/json",
+            "User-Agent": "Appcircle Github Action"
+        };
+        response.Authorization = "Bearer ".concat(UploadServiceHeaders.token);
+        return response;
+    };
+    return UploadServiceHeaders;
+}());
+exports.UploadServiceHeaders = UploadServiceHeaders;
+function createDistributionProfile(name) {
+    return __awaiter(this, void 0, void 0, function () {
+        var response;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, exports.appcircleApi.post("distribution/v2/profiles", { name: name }, {
+                        headers: UploadServiceHeaders.getHeaders()
+                    })];
+                case 1:
+                    response = _a.sent();
+                    return [2 /*return*/, response.data];
+            }
+        });
     });
 }
+exports.createDistributionProfile = createDistributionProfile;
+function getDistributionProfiles() {
+    return __awaiter(this, void 0, void 0, function () {
+        var distributionProfiles;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, exports.appcircleApi.get("distribution/v2/profiles", {
+                        headers: UploadServiceHeaders.getHeaders()
+                    })];
+                case 1:
+                    distributionProfiles = _a.sent();
+                    return [2 /*return*/, distributionProfiles.data];
+            }
+        });
+    });
+}
+exports.getDistributionProfiles = getDistributionProfiles;
+function getProfileId(profileName, createProfileIfNotExists) {
+    return __awaiter(this, void 0, void 0, function () {
+        var profiles, profileId, _i, profiles_1, profile, newProfile;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, getDistributionProfiles()];
+                case 1:
+                    profiles = _a.sent();
+                    profileId = null;
+                    for (_i = 0, profiles_1 = profiles; _i < profiles_1.length; _i++) {
+                        profile = profiles_1[_i];
+                        if (profile.name === profileName) {
+                            profileId = profile.id;
+                            break;
+                        }
+                    }
+                    if (profileId === null && !createProfileIfNotExists) {
+                        throw new Error("Error: The test profile '".concat(profileName, "' could not be found. The option 'createProfileIfNotExists' is set to false, so no new profile was created. To automatically create a new profile if it doesn't exist, set 'createProfileIfNotExists' to true."));
+                    }
+                    if (!(profileId === null && createProfileIfNotExists)) return [3 /*break*/, 3];
+                    return [4 /*yield*/, createDistributionProfile(profileName)];
+                case 2:
+                    newProfile = _a.sent();
+                    if (!newProfile || newProfile === null) {
+                        throw new Error("Error: The new profile could not be created.");
+                    }
+                    console.log("New profile created: ".concat(newProfile.name));
+                    profileId = newProfile.id;
+                    _a.label = 3;
+                case 3:
+                    if (!profileId) {
+                        throw new Error("Error: The profile ID is not found.");
+                    }
+                    return [2 /*return*/, profileId];
+            }
+        });
+    });
+}
+exports.getProfileId = getProfileId;
+function uploadArtifact(options) {
+    return __awaiter(this, void 0, void 0, function () {
+        var data, uploadResponse;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    data = new FormData();
+                    data.append("Message", options.message);
+                    data.append("File", fs.createReadStream(options.app));
+                    return [4 /*yield*/, exports.appcircleApi.post("distribution/v2/profiles/".concat(options.distProfileId, "/app-versions"), data, {
+                            maxContentLength: Infinity,
+                            maxBodyLength: Infinity,
+                            headers: __assign(__assign(__assign({}, UploadServiceHeaders.getHeaders()), data.getHeaders()), { "Content-Type": "multipart/form-data;boundary=" + data.getBoundary() })
+                        })];
+                case 1:
+                    uploadResponse = _a.sent();
+                    return [2 /*return*/, uploadResponse.data];
+            }
+        });
+    });
+}
+exports.uploadArtifact = uploadArtifact;
+function checkTaskStatus(token, taskId, currentAttempt) {
+    if (currentAttempt === void 0) { currentAttempt = 0; }
+    return __awaiter(this, void 0, void 0, function () {
+        var response, res, error_2;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    _a.trys.push([0, 2, , 3]);
+                    return [4 /*yield*/, exports.appcircleApi.get("/task/v1/tasks/".concat(taskId), {
+                            headers: {
+                                "Content-Type": "application/json",
+                                Authorization: "Bearer ".concat(token)
+                            }
+                        })];
+                case 1:
+                    response = _a.sent();
+                    res = response.data;
+                    if (((res === null || res === void 0 ? void 0 : res.stateValue) == 0 || (res === null || res === void 0 ? void 0 : res.stateValue) == 1) &&
+                        currentAttempt < 100) {
+                        return [2 /*return*/, checkTaskStatus(token, taskId, currentAttempt + 1)];
+                    }
+                    else if ((res === null || res === void 0 ? void 0 : res.stateValue) === 2) {
+                        throw new Error("Build Upload Task Failed: ".concat(res.stateName));
+                    }
+                    return [3 /*break*/, 3];
+                case 2:
+                    error_2 = _a.sent();
+                    if (error_2 instanceof Error) {
+                        throw new Error("Error checking task status: ".concat(error_2.message));
+                    }
+                    else {
+                        throw new Error("Error checking task status: ".concat(String(error_2)));
+                    }
+                    return [3 /*break*/, 3];
+                case 3: return [2 /*return*/];
+            }
+        });
+    });
+}
+exports.checkTaskStatus = checkTaskStatus;
