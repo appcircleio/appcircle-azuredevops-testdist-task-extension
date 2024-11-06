@@ -45,7 +45,7 @@
       "label": "App Path",
       "defaultValue": "",
       "required": true,
-      "helpMarkDown": "Specify the path to your application file. Supported file extensions are .ipa, .apk, .aab, and .zip."
+      "helpMarkDown": "Specify the path to your application file. Supported file extensions are .ipa, .apk, .aab."
     },
     {
       "name": "message",
