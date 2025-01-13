@@ -5,16 +5,18 @@ const CopyWebpackPlugin = require("copy-webpack-plugin");
 const entries = fs
   .readdirSync(path.join(__dirname, "buildandreleasetask"))
   .filter((dir) => fs.statSync(path.join("buildandreleasetask", dir)).isDirectory())
-  .reduce((acc, dir) => ({ ...acc, [dir]: `./buildandreleasetask/${dir}/${dir}` }), {}); // buildandreleasetask is equilaent to src
+  .reduce((acc, dir) => ({ ...acc, [dir]: `./buildandreleasetask/${dir}/${dir}` }), {}); // buildandreleasetask is equivalent to src
 
 module.exports = {
   entry: entries,
   devtool: "inline-source-map",
   output: {
     filename: "[name]/[name].js",
+    // path: path.resolve(__dirname, "dist"),
     publicPath: "/dist/",
   },
   devServer: {
+    // static: path.join(__dirname, "buildandreleasetask"),
     https: true,
     port: 3000,
   },
