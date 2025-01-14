@@ -36,20 +36,7 @@ Testing distribution is the process of distributing test builds to designated te
 
 Overall, using testing distribution in mobile DevOps significantly enhances the efficiency, security, and effectiveness of the software development process, leading to better products and faster delivery times.
 
-## System Requirements
-
-**Compatible Agents:**
-
-- macos-14 (arm64)
-
-Note: Currently, plugins are only compatible to use with **Appcircle Cloud**.
-**Self-hosted** support will be available in future releases.
-
-## Getting Started with the Extension: Usage Guide
-
-To share your builds with testers, you can create distribution profiles and assign testing groups to these profiles.
-
-### Testing Distribution
+<!-- ### Testing Distribution
 
 In order to share your builds with testers, you can create distribution profiles and assign testing groups to the distribution profiles.
 
@@ -63,44 +50,35 @@ To generate a Personal API Token, follow these steps:
 2. You'll find the Personal API Token section in the top right corner.
 3. Press the "Generate Token" button to generate your first token.
 
-![Token Generation](images/PAT.png)
+![Token Generation](images/PAT.png) -->
 
 ```yaml
 - task: AppcircleTestingDistribution@0
   inputs:
-    personalAPIToken: $(AC_PROFLE_API_TOKEN)
+    personalAPIToken: $(AC_PERSONAL_API_TOKEN)
+    authEndpoint: $(AC_AUTH_ENDPOINT)
+    apiEndpoint: $(AC_API_ENDPOINT)
     profileName: $(AC_PROFILE_NAME)
-    createProfileIfNotExists: $(CREATE_PROFILE_IF_NOT_EXISTS)
-    appPath: $(APP_PATH)
-    message: $(MESSAGE)
+    createProfileIfNotExists: $(AC_CREATE_PROFILE_IF_NOT_EXISTS)
+    appPath: $(AC_APP_PATH)
+    message: $(AC_MESSAGE)
 ```
 
-- `personalAPIToken`: The Appcircle Personal API token is utilized to
-  authenticate and secure access to Appcircle services, ensuring that only
-  authorized users can perform actions within the platform.
+- `personalAPIToken`: The Appcircle Personal API token used to authenticate and authorize access to Appcircle services within this extension.
+- `authEndpoint` (optional): Authentication endpoint URL for self-hosted Appcircle installations. Defaults to https://auth.appcircle.io.
+- `apiEndpoint` (optional): API endpoint URL for self-hosted Appcircle installations. Defaults to https://api.appcircle.io.
 - `profileName`: Specifies the profile that will be used for uploading the app.
-- `createProfileIfNotExists`: Ensures that a user profile is automatically
-  created if it does not already exist; if the profile name already exists, the
-  app will be uploaded to that existing profile instead.
-- `appPath`: Indicates the file path to the application that will be uploaded to
-  Appcircle Testing Distribution Profile.
-- `message`: Your message to testers, ensuring they receive important updates
-  and information regarding the application.
+- `createProfileIfNotExists` (optional): Ensures that a testing distribution profile is automatically created if it does not already exist; if the profile name already exists, the app will be uploaded to that existing profile instead.
+- `appPath`: Indicates the file path to the application package that will be uploaded to Appcircle Testing Distribution Profile.
+- `message`: Your message to testers, ensuring they receive important updates and information regarding the application.
 
-### Leveraging Environment Variables
+## Further Details
 
-Utilize environment variables seamlessly by substituting the parameters with `$(VARIABLE_NAME)` in your task inputs. The extension automatically retrieves values from the specified environment variables within your pipeline.
+For more information please refer to the documentation.
 
-**Ensure that this action is added after build steps have been completed.**
-
-**If multiple workflows start simultaneously, the order in which versions are shared in the Testing Distribution is determined by the execution order of the
-publish step. The version that completes its build and triggers the publish
-plugin first will be shared first, followed by the others in sequence.**
-
-Efficiently distribute test binaries or beta versions using Appcircle, featuring seamless IPA and APK distribution capabilities. Streamline your testing process with our versatile tool designed to optimize your distribution workflow. If you need support or more information, please [contact us](https://appcircle.io/contact?&utm_source=azure&utm_medium=product&utm_campaign=testing_distribution)
-
-### Reference
-
-- For details on generating an Appcircle Personel API Token, visit [Generating/Managing Personal API Tokens](https://docs.appcircle.io/appcircle-api/api-authentication#generatingmanaging-the-personal-api-tokens)
-
-- To create or learn more about Appcircle testing and distribution profiles, please refer to [Creating or Selecting a Distribution Profile](https://docs.appcircle.io/distribute/create-or-select-a-distribution-profile?&utm_source=azure&utm_medium=product&utm_campaign=testing_distribution)
+- [Setting Up Appcircle Testing Distribution Task in Azure DevOps Pipeline](https://docs.appcircle.io/marketplace/visual-studio-marketplace/testing-distribution)
+  - [Discover Extension]()
+  - [System Requirements]()
+  - [How to Add the Appcircle Testing Distribution Task to Your Pipeline]()
+  - [Leveraging Environment Variables]()
+- [References]()
