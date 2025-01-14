@@ -65,7 +65,10 @@ function run() {
         return __generator(this, function (_c) {
             switch (_c.label) {
                 case 0:
-                    _c.trys.push([0, 7, , 8]);
+                    console.log("Hello, Appcircle!");
+                    _c.label = 1;
+                case 1:
+                    _c.trys.push([1, 8, , 9]);
                     personalAPIToken = tl.getInputRequired("personalAPIToken");
                     profileName = tl.getInputRequired("profileName");
                     createProfileIfNotExists = (_a = tl.getBoolInput("createProfileIfNotExists")) !== null && _a !== void 0 ? _a : false;
@@ -85,37 +88,37 @@ function run() {
                         return [2 /*return*/];
                     }
                     return [4 /*yield*/, getToken(personalAPIToken)];
-                case 1:
+                case 2:
                     loginResponse = _c.sent();
                     console.log("Logged in to Appcircle successfully");
                     UploadServiceHeaders.token = loginResponse.access_token;
                     return [4 /*yield*/, getProfileId(profileName, createProfileIfNotExists)];
-                case 2:
+                case 3:
                     profileIdFromName = _c.sent();
                     return [4 /*yield*/, uploadArtifact({
                             message: message,
                             app: appPath,
                             distProfileId: profileIdFromName,
                         })];
-                case 3:
+                case 4:
                     uploadResponse = _c.sent();
-                    if (!!uploadResponse.taskId) return [3 /*break*/, 4];
+                    if (!!uploadResponse.taskId) return [3 /*break*/, 5];
                     tl.setResult(tl.TaskResult.Failed, "Task ID is not found in the upload response");
-                    return [3 /*break*/, 6];
-                case 4: return [4 /*yield*/, checkTaskStatus(loginResponse.access_token, uploadResponse.taskId)];
-                case 5:
+                    return [3 /*break*/, 7];
+                case 5: return [4 /*yield*/, checkTaskStatus(loginResponse.access_token, uploadResponse.taskId)];
+                case 6:
                     _c.sent();
                     console.log("".concat(appPath, " uploaded to Appcircle successfully"));
-                    _c.label = 6;
-                case 6:
-                    tl.setResult(tl.TaskResult.Succeeded, "".concat(appPath, " uploaded to Appcircle successfully"));
-                    return [3 /*break*/, 8];
+                    _c.label = 7;
                 case 7:
+                    tl.setResult(tl.TaskResult.Succeeded, "".concat(appPath, " uploaded to Appcircle successfully"));
+                    return [3 /*break*/, 9];
+                case 8:
                     err_1 = _c.sent();
                     console.log(err_1);
                     tl.setResult(tl.TaskResult.Failed, err_1.message);
-                    return [3 /*break*/, 8];
-                case 8: return [2 /*return*/];
+                    return [3 /*break*/, 9];
+                case 9: return [2 /*return*/];
             }
         });
     });

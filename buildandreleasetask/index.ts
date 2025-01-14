@@ -4,6 +4,8 @@ import * as fs from "fs";
 import * as FormData from "form-data";
 
 async function run() {
+  console.log("Hello, Appcircle!");
+
   try {
     const personalAPIToken = tl.getInputRequired("personalAPIToken");
     const profileName = tl.getInputRequired("profileName");
