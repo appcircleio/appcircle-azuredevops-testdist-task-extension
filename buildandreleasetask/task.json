@@ -10,7 +10,7 @@
   "version": {
     "Major": 0,
     "Minor": 0,
-    "Patch": 80
+    "Patch": 83
   },
   "visibility": ["Build", "Release"],
   "instanceNameFormat": "Appcircle Testing Distribution",
@@ -38,6 +38,15 @@
       "defaultValue": "https://api.appcircle.io",
       "required": false,
       "helpMarkDown": "Specify the API endpoint URL for self-hosted Appcircle installations. Default is the cloud endpoint: https://api.appcircle.io"
+    },
+    {
+      "name": "sslCertificatePath",
+      "type": "filePath",
+      "label": "SSL Certificate Path",
+      "defaultValue": "",
+      "required": false,
+      "helpMarkDown": "Path to SSL certificate file (.crt, .pem) for self-hosted installations with self-signed certificates. Leave empty to use default certificate handling.",
+      "visibleRule": "authEndpoint != https://auth.appcircle.io || apiEndpoint != https://api.appcircle.io"
     },
     {
       "name": "profileName",

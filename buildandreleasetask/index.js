@@ -58,21 +58,23 @@ var tl = require("azure-pipelines-task-lib/task");
 var axios_1 = require("axios");
 var fs = require("fs");
 var FormData = require("form-data");
+var https = require("https");
 function run() {
     return __awaiter(this, void 0, void 0, function () {
-        var personalAPIToken, authEndpoint, apiEndpoint, profileName, createProfileIfNotExists, appPath, message, validExtensions, fileExtension, apiEndpointUrl, appcircleApi, loginResponse, profileIdFromName, uploadResponse, err_1;
-        var _a, _b, _c, _d;
-        return __generator(this, function (_e) {
-            switch (_e.label) {
+        var personalAPIToken, authEndpoint, apiEndpoint, sslCertificatePath, profileName, createProfileIfNotExists, appPath, message, validExtensions, fileExtension, customHttpsAgent, apiEndpointUrl, appcircleApi, loginResponse, profileIdFromName, uploadResponse, err_1;
+        var _a, _b, _c, _d, _e;
+        return __generator(this, function (_f) {
+            switch (_f.label) {
                 case 0:
-                    _e.trys.push([0, 7, , 8]);
+                    _f.trys.push([0, 7, , 8]);
                     personalAPIToken = tl.getInputRequired("personalAPIToken");
                     authEndpoint = (_a = tl.getInput("authEndpoint")) !== null && _a !== void 0 ? _a : "https://auth.appcircle.io";
                     apiEndpoint = (_b = tl.getInput("apiEndpoint")) !== null && _b !== void 0 ? _b : "https://api.appcircle.io";
+                    sslCertificatePath = (_c = tl.getInput("sslCertificatePath")) !== null && _c !== void 0 ? _c : "";
                     profileName = tl.getInputRequired("profileName");
-                    createProfileIfNotExists = (_c = tl.getBoolInput("createProfileIfNotExists")) !== null && _c !== void 0 ? _c : false;
+                    createProfileIfNotExists = (_d = tl.getBoolInput("createProfileIfNotExists")) !== null && _d !== void 0 ? _d : false;
                     appPath = tl.getInputRequired("appPath");
-                    message = (_d = tl.getInput("message")) !== null && _d !== void 0 ? _d : "";
+                    message = (_e = tl.getInput("message")) !== null && _e !== void 0 ? _e : "";
                     validExtensions = [".ipa", ".apk", ".aab", ".zip"];
                     fileExtension = appPath.slice(appPath.lastIndexOf(".")).toLowerCase();
                     if (!validExtensions.includes(fileExtension)) {
@@ -86,38 +88,52 @@ function run() {
                         tl.setResult(tl.TaskResult.Failed, "The specified file '".concat(appPath, "' does not exist."));
                         return [2 /*return*/];
                     }
+                    // If SSL certificate path is provided, check file existance
+                    if (sslCertificatePath && !fs.existsSync(sslCertificatePath)) {
+                        tl.setResult(tl.TaskResult.Failed, "The specified certificate file '".concat(appPath, "' does not exist."));
+                        return [2 /*return*/];
+                    }
+                    if (sslCertificatePath) {
+                        customHttpsAgent = new https.Agent({
+                            ca: fs.readFileSync(sslCertificatePath),
+                            rejectUnauthorized: true
+                        });
+                    }
                     apiEndpointUrl = new URL(apiEndpoint).toString();
                     appcircleApi = axios_1.default.create({
                         baseURL: apiEndpointUrl,
                     });
-                    return [4 /*yield*/, getToken(personalAPIToken, authEndpoint)];
+                    if (customHttpsAgent) {
+                        appcircleApi.defaults.httpsAgent = customHttpsAgent;
+                    }
+                    return [4 /*yield*/, getToken(personalAPIToken, authEndpoint, customHttpsAgent)];
                 case 1:
-                    loginResponse = _e.sent();
+                    loginResponse = _f.sent();
                     console.log("Logged in to Appcircle successfully");
                     UploadServiceHeaders.token = loginResponse.access_token;
                     return [4 /*yield*/, getProfileId(appcircleApi, profileName, createProfileIfNotExists)];
                 case 2:
-                    profileIdFromName = _e.sent();
+                    profileIdFromName = _f.sent();
                     return [4 /*yield*/, uploadArtifact(appcircleApi, {
                             message: message,
                             app: appPath,
                             distProfileId: profileIdFromName,
                         })];
                 case 3:
-                    uploadResponse = _e.sent();
+                    uploadResponse = _f.sent();
                     if (!!uploadResponse.taskId) return [3 /*break*/, 4];
                     tl.setResult(tl.TaskResult.Failed, "Task ID is not found in the upload response");
                     return [3 /*break*/, 6];
                 case 4: return [4 /*yield*/, checkTaskStatus(appcircleApi, loginResponse.access_token, uploadResponse.taskId)];
                 case 5:
-                    _e.sent();
+                    _f.sent();
                     console.log("".concat(appPath, " uploaded to Appcircle successfully"));
-                    _e.label = 6;
+                    _f.label = 6;
                 case 6:
                     tl.setResult(tl.TaskResult.Succeeded, "".concat(appPath, " uploaded to Appcircle successfully"));
                     return [3 /*break*/, 8];
                 case 7:
-                    err_1 = _e.sent();
+                    err_1 = _f.sent();
                     console.log(err_1);
                     tl.setResult(tl.TaskResult.Failed, err_1.message);
                     return [3 /*break*/, 8];
@@ -128,9 +144,9 @@ function run() {
 }
 run();
 /* API */
-function getToken(pat, authEndpoint) {
+function getToken(pat, authEndpoint, customHttpsAgent) {
     return __awaiter(this, void 0, void 0, function () {
-        var params, url, response, error_1;
+        var params, url, api, response, error_1;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -140,7 +156,11 @@ function getToken(pat, authEndpoint) {
                 case 1:
                     _a.trys.push([1, 3, , 4]);
                     url = new URL('/auth/v1/token', authEndpoint).toString();
-                    return [4 /*yield*/, axios_1.default.post(url, params.toString(), {
+                    api = axios_1.default.create();
+                    if (customHttpsAgent) {
+                        api.defaults.httpsAgent = customHttpsAgent;
+                    }
+                    return [4 /*yield*/, api.post(url, params.toString(), {
                             headers: {
                                 accept: "application/json",
                                 "content-type": "application/x-www-form-urlencoded",
