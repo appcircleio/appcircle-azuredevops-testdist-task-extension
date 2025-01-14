@@ -47,7 +47,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.UploadServiceHeaders = exports.appcircleApi = void 0;
+exports.UploadServiceHeaders = void 0;
 exports.getToken = getToken;
 exports.createDistributionProfile = createDistributionProfile;
 exports.getDistributionProfiles = getDistributionProfiles;
@@ -60,20 +60,19 @@ var fs = require("fs");
 var FormData = require("form-data");
 function run() {
     return __awaiter(this, void 0, void 0, function () {
-        var personalAPIToken, profileName, createProfileIfNotExists, appPath, message, validExtensions, fileExtension, loginResponse, profileIdFromName, uploadResponse, err_1;
-        var _a, _b;
-        return __generator(this, function (_c) {
-            switch (_c.label) {
+        var personalAPIToken, authEndpoint, apiEndpoint, profileName, createProfileIfNotExists, appPath, message, validExtensions, fileExtension, apiEndpointUrl, appcircleApi, loginResponse, profileIdFromName, uploadResponse, err_1;
+        var _a, _b, _c, _d;
+        return __generator(this, function (_e) {
+            switch (_e.label) {
                 case 0:
-                    console.log("Hello, Appcircle!");
-                    _c.label = 1;
-                case 1:
-                    _c.trys.push([1, 8, , 9]);
+                    _e.trys.push([0, 7, , 8]);
                     personalAPIToken = tl.getInputRequired("personalAPIToken");
+                    authEndpoint = (_a = tl.getInput("authEndpoint")) !== null && _a !== void 0 ? _a : "https://auth.appcircle.io";
+                    apiEndpoint = (_b = tl.getInput("apiEndpoint")) !== null && _b !== void 0 ? _b : "https://api.appcircle.io";
                     profileName = tl.getInputRequired("profileName");
-                    createProfileIfNotExists = (_a = tl.getBoolInput("createProfileIfNotExists")) !== null && _a !== void 0 ? _a : false;
+                    createProfileIfNotExists = (_c = tl.getBoolInput("createProfileIfNotExists")) !== null && _c !== void 0 ? _c : false;
                     appPath = tl.getInputRequired("appPath");
-                    message = (_b = tl.getInput("message")) !== null && _b !== void 0 ? _b : "";
+                    message = (_d = tl.getInput("message")) !== null && _d !== void 0 ? _d : "";
                     validExtensions = [".ipa", ".apk", ".aab", ".zip"];
                     fileExtension = appPath.slice(appPath.lastIndexOf(".")).toLowerCase();
                     if (!validExtensions.includes(fileExtension)) {
@@ -87,47 +86,51 @@ function run() {
                         tl.setResult(tl.TaskResult.Failed, "The specified file '".concat(appPath, "' does not exist."));
                         return [2 /*return*/];
                     }
-                    return [4 /*yield*/, getToken(personalAPIToken)];
-                case 2:
-                    loginResponse = _c.sent();
+                    apiEndpointUrl = new URL(apiEndpoint).toString();
+                    appcircleApi = axios_1.default.create({
+                        baseURL: apiEndpointUrl,
+                    });
+                    return [4 /*yield*/, getToken(personalAPIToken, authEndpoint)];
+                case 1:
+                    loginResponse = _e.sent();
                     console.log("Logged in to Appcircle successfully");
                     UploadServiceHeaders.token = loginResponse.access_token;
-                    return [4 /*yield*/, getProfileId(profileName, createProfileIfNotExists)];
-                case 3:
-                    profileIdFromName = _c.sent();
-                    return [4 /*yield*/, uploadArtifact({
+                    return [4 /*yield*/, getProfileId(appcircleApi, profileName, createProfileIfNotExists)];
+                case 2:
+                    profileIdFromName = _e.sent();
+                    return [4 /*yield*/, uploadArtifact(appcircleApi, {
                             message: message,
                             app: appPath,
                             distProfileId: profileIdFromName,
                         })];
-                case 4:
-                    uploadResponse = _c.sent();
-                    if (!!uploadResponse.taskId) return [3 /*break*/, 5];
+                case 3:
+                    uploadResponse = _e.sent();
+                    if (!!uploadResponse.taskId) return [3 /*break*/, 4];
                     tl.setResult(tl.TaskResult.Failed, "Task ID is not found in the upload response");
-                    return [3 /*break*/, 7];
-                case 5: return [4 /*yield*/, checkTaskStatus(loginResponse.access_token, uploadResponse.taskId)];
-                case 6:
-                    _c.sent();
+                    return [3 /*break*/, 6];
+                case 4: return [4 /*yield*/, checkTaskStatus(appcircleApi, loginResponse.access_token, uploadResponse.taskId)];
+                case 5:
+                    _e.sent();
                     console.log("".concat(appPath, " uploaded to Appcircle successfully"));
-                    _c.label = 7;
-                case 7:
+                    _e.label = 6;
+                case 6:
                     tl.setResult(tl.TaskResult.Succeeded, "".concat(appPath, " uploaded to Appcircle successfully"));
-                    return [3 /*break*/, 9];
-                case 8:
-                    err_1 = _c.sent();
+                    return [3 /*break*/, 8];
+                case 7:
+                    err_1 = _e.sent();
                     console.log(err_1);
                     tl.setResult(tl.TaskResult.Failed, err_1.message);
-                    return [3 /*break*/, 9];
-                case 9: return [2 /*return*/];
+                    return [3 /*break*/, 8];
+                case 8: return [2 /*return*/];
             }
         });
     });
 }
 run();
 /* API */
-function getToken(pat) {
+function getToken(pat, authEndpoint) {
     return __awaiter(this, void 0, void 0, function () {
-        var params, response, error_1;
+        var params, url, response, error_1;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -136,7 +139,8 @@ function getToken(pat) {
                     _a.label = 1;
                 case 1:
                     _a.trys.push([1, 3, , 4]);
-                    return [4 /*yield*/, axios_1.default.post("https://auth.appcircle.io/auth/v1/token", params.toString(), {
+                    url = new URL('/auth/v1/token', authEndpoint).toString();
+                    return [4 /*yield*/, axios_1.default.post(url, params.toString(), {
                             headers: {
                                 accept: "application/json",
                                 "content-type": "application/x-www-form-urlencoded",
@@ -163,10 +167,22 @@ function getToken(pat) {
         });
     });
 }
-var API_HOSTNAME = "https://api.appcircle.io";
-exports.appcircleApi = axios_1.default.create({
-    baseURL: API_HOSTNAME.endsWith("/") ? API_HOSTNAME : "".concat(API_HOSTNAME, "/"),
-});
+// let API_HOSTNAME = "https://api.appcircle.io";
+// export function configureApiEndpoint(endpoint: string) {
+//   API_HOSTNAME = endpoint;
+// }
+// export const appcircleApi = axios.create({
+//   baseURL: "",  // Will be set for each request
+// });
+// // Modify the existing appcircleApi.post and appcircleApi.get calls to use API_HOSTNAME
+// appcircleApi.interceptors.request.use((config) => {
+//   config.baseURL = API_HOSTNAME.endsWith("/") ? API_HOSTNAME : `${API_HOSTNAME}/`;
+//   return config;
+// });
+// const apiEndpointUrl = new URL(apiEndpoint).toString();
+// export const appcircleApi = axios.create({
+//   baseURL: apiEndpointUrl,
+// });
 var UploadServiceHeaders = /** @class */ (function () {
     function UploadServiceHeaders() {
     }
@@ -182,12 +198,12 @@ var UploadServiceHeaders = /** @class */ (function () {
     return UploadServiceHeaders;
 }());
 exports.UploadServiceHeaders = UploadServiceHeaders;
-function createDistributionProfile(name) {
+function createDistributionProfile(api, name) {
     return __awaiter(this, void 0, void 0, function () {
         var response;
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0: return [4 /*yield*/, exports.appcircleApi.post("distribution/v2/profiles", { name: name }, {
+                case 0: return [4 /*yield*/, api.post("distribution/v2/profiles", { name: name }, {
                         headers: UploadServiceHeaders.getHeaders(),
                     })];
                 case 1:
@@ -197,12 +213,12 @@ function createDistributionProfile(name) {
         });
     });
 }
-function getDistributionProfiles() {
+function getDistributionProfiles(api) {
     return __awaiter(this, void 0, void 0, function () {
         var distributionProfiles;
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0: return [4 /*yield*/, exports.appcircleApi.get("distribution/v2/profiles", {
+                case 0: return [4 /*yield*/, api.get("distribution/v2/profiles", {
                         headers: UploadServiceHeaders.getHeaders(),
                     })];
                 case 1:
@@ -212,12 +228,12 @@ function getDistributionProfiles() {
         });
     });
 }
-function getProfileId(profileName, createProfileIfNotExists) {
+function getProfileId(api, profileName, createProfileIfNotExists) {
     return __awaiter(this, void 0, void 0, function () {
         var profiles, profileId, _i, profiles_1, profile, newProfile;
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0: return [4 /*yield*/, getDistributionProfiles()];
+                case 0: return [4 /*yield*/, getDistributionProfiles(api)];
                 case 1:
                     profiles = _a.sent();
                     profileId = null;
@@ -232,7 +248,7 @@ function getProfileId(profileName, createProfileIfNotExists) {
                         throw new Error("Error: The test profile '".concat(profileName, "' could not be found. The option 'createProfileIfNotExists' is set to false, so no new profile was created. To automatically create a new profile if it doesn't exist, set 'createProfileIfNotExists' to true."));
                     }
                     if (!(profileId === null && createProfileIfNotExists)) return [3 /*break*/, 3];
-                    return [4 /*yield*/, createDistributionProfile(profileName)];
+                    return [4 /*yield*/, createDistributionProfile(api, profileName)];
                 case 2:
                     newProfile = _a.sent();
                     if (!newProfile || newProfile === null) {
@@ -250,7 +266,7 @@ function getProfileId(profileName, createProfileIfNotExists) {
         });
     });
 }
-function uploadArtifact(options) {
+function uploadArtifact(api, options) {
     return __awaiter(this, void 0, void 0, function () {
         var data, uploadResponse;
         return __generator(this, function (_a) {
@@ -259,7 +275,7 @@ function uploadArtifact(options) {
                     data = new FormData();
                     data.append("Message", options.message);
                     data.append("File", fs.createReadStream(options.app));
-                    return [4 /*yield*/, exports.appcircleApi.post("distribution/v2/profiles/".concat(options.distProfileId, "/app-versions"), data, {
+                    return [4 /*yield*/, api.post("distribution/v2/profiles/".concat(options.distProfileId, "/app-versions"), data, {
                             maxContentLength: Infinity,
                             maxBodyLength: Infinity,
                             headers: __assign(__assign(__assign({}, UploadServiceHeaders.getHeaders()), data.getHeaders()), { "Content-Type": "multipart/form-data;boundary=" + data.getBoundary() }),
@@ -271,15 +287,15 @@ function uploadArtifact(options) {
         });
     });
 }
-function checkTaskStatus(token_1, taskId_1) {
-    return __awaiter(this, arguments, void 0, function (token, taskId, currentAttempt) {
+function checkTaskStatus(api_1, token_1, taskId_1) {
+    return __awaiter(this, arguments, void 0, function (api, token, taskId, currentAttempt) {
         var response, res, error_2;
         if (currentAttempt === void 0) { currentAttempt = 0; }
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     _a.trys.push([0, 2, , 3]);
-                    return [4 /*yield*/, exports.appcircleApi.get("/task/v1/tasks/".concat(taskId), {
+                    return [4 /*yield*/, api.get("/task/v1/tasks/".concat(taskId), {
                             headers: {
                                 "Content-Type": "application/json",
                                 Authorization: "Bearer ".concat(token),
@@ -290,7 +306,7 @@ function checkTaskStatus(token_1, taskId_1) {
                     res = response.data;
                     if (((res === null || res === void 0 ? void 0 : res.stateValue) == 0 || (res === null || res === void 0 ? void 0 : res.stateValue) == 1) &&
                         currentAttempt < 100) {
-                        return [2 /*return*/, checkTaskStatus(token, taskId, currentAttempt + 1)];
+                        return [2 /*return*/, checkTaskStatus(api, token, taskId, currentAttempt + 1)];
                     }
                     else if ((res === null || res === void 0 ? void 0 : res.stateValue) === 2) {
                         throw new Error("Build Upload Task Failed: ".concat(res.stateName));
