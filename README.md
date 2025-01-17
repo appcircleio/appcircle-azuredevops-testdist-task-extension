@@ -70,7 +70,7 @@ To generate a Personal API Token, follow these steps:
 - `profileName`: Specifies the profile that will be used for uploading the app.
 - `createProfileIfNotExists` (optional): Ensures that a testing distribution profile is automatically created if it does not already exist; if the profile name already exists, the app will be uploaded to that existing profile instead.
 - `appPath`: Indicates the file path to the application package that will be uploaded to Appcircle Testing Distribution Profile.
-- `message`: Your message to testers, ensuring they receive important updates and information regarding the application.
+- `message` (optional): Your message to testers, ensuring they receive important updates and information regarding the application.
 
 ## Further Details
 
