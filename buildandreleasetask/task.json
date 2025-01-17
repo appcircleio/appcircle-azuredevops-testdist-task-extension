@@ -10,7 +10,7 @@
   "version": {
     "Major": 0,
     "Minor": 0,
-    "Patch": 80
+    "Patch": 85
   },
   "visibility": ["Build", "Release"],
   "instanceNameFormat": "Appcircle Testing Distribution",
