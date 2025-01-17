@@ -2,14 +2,12 @@ import * as tl from "azure-pipelines-task-lib/task";
 import axios, { Axios, AxiosInstance, AxiosRequestConfig } from "axios";
 import * as fs from "fs";
 import * as FormData from "form-data";
-import * as https from 'https';
 
 async function run() {
   try {
     const personalAPIToken = tl.getInputRequired("personalAPIToken");
     const authEndpoint = tl.getInput("authEndpoint") ?? "https://auth.appcircle.io";
     const apiEndpoint = tl.getInput("apiEndpoint") ?? "https://api.appcircle.io";
-    const sslCertificatePath = tl.getInput("sslCertificatePath") ?? "";
     const profileName = tl.getInputRequired("profileName");
     const createProfileIfNotExists =
       tl.getBoolInput("createProfileIfNotExists") ?? false;
@@ -37,33 +35,13 @@ async function run() {
       return;
     }
 
-    // If SSL certificate path is provided, check file existance
-    if (sslCertificatePath && !fs.existsSync(sslCertificatePath)) {
-      tl.setResult(
-        tl.TaskResult.Failed,
-        `The specified certificate file '${appPath}' does not exist.`
-      );
-      return;
-    }
-    // Create custom https agent
-    var customHttpsAgent;
-    if(sslCertificatePath) {
-      customHttpsAgent = new https.Agent({
-        ca: fs.readFileSync(sslCertificatePath),
-        rejectUnauthorized: true
-      });
-    }
-
     // Create Appcircle API instance
     const apiEndpointUrl = new URL(apiEndpoint).toString();
     const appcircleApi = axios.create({
       baseURL: apiEndpointUrl,
     });
-    if(customHttpsAgent) {
-      appcircleApi.defaults.httpsAgent = customHttpsAgent;
-    }
 
-    const loginResponse = await getToken(personalAPIToken, authEndpoint, customHttpsAgent);
+    const loginResponse = await getToken(personalAPIToken, authEndpoint);
     console.log("Logged in to Appcircle successfully");
     UploadServiceHeaders.token = loginResponse.access_token;
     const profileIdFromName = await getProfileId(
@@ -103,18 +81,13 @@ run();
 
 /* API */
 
-export async function getToken(pat: string, authEndpoint: string, customHttpsAgent?: https.Agent): Promise<any> {
+export async function getToken(pat: string, authEndpoint: string): Promise<any> {
   const params = new URLSearchParams();
   params.append("pat", pat);
 
   try {
     const url = new URL('/auth/v1/token', authEndpoint).toString();
-    const api = axios.create();
-    if(customHttpsAgent) {
-      api.defaults.httpsAgent = customHttpsAgent;
-    }
-    
-    const response = await api.post(
+    const response = await axios.post(
       url,
       params.toString(),
       {
