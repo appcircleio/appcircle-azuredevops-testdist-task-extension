@@ -1,10 +1,9 @@
 {
-  "name": "appcircle-azuredevops-testdist-task-extension.buildandreleasetask",
+  "name": "appcircle-azuredevops-testdist-extension.buildandreleasetask",
   "version": "0.0.70",
-  "description": "",
+  "description": "NPM Package for Appcircle Testing Distribution Task",
   "main": "index.js",
-  "keywords": [],
-  "author": "",
+  "author": "Appcircle",
   "license": "MIT",
   "dependencies": {
     "axios": "^1.7.7",

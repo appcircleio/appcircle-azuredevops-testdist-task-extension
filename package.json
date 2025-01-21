@@ -1,19 +1,21 @@
 {
-  "name": "appcircle-azuredevops-testdist-task-extension",
+  "name": "appcircle-azuredevops-testdist-extension",
   "version": "0.0.70",
-  "description": "",
+  "description": "NPM Package for Appcircle Testing Distribution Extension",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "package": "tsc ./buildandreleasetask/index.ts",
     "package:watch": "tsc --watch ./buildandreleasetask/index.ts",
 
     "compile:dev": "webpack --mode development",
     "start:dev": "webpack-dev-server --mode development"
   },
-  "keywords": [],
-  "author": "",
+  "author": "Appcircle",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/appcircleio/appcircle-azuredevops-testdist-task-extension"
+  },
   "dependencies": {
     "axios": "^1.7.7",
     "azure-devops-extension-sdk": "^4.0.2",

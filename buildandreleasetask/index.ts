@@ -113,26 +113,6 @@ export async function getToken(pat: string, authEndpoint: string): Promise<any> 
   }
 }
 
-// let API_HOSTNAME = "https://api.appcircle.io";
-// export function configureApiEndpoint(endpoint: string) {
-//   API_HOSTNAME = endpoint;
-// }
-
-// export const appcircleApi = axios.create({
-//   baseURL: "",  // Will be set for each request
-// });
-
-// // Modify the existing appcircleApi.post and appcircleApi.get calls to use API_HOSTNAME
-// appcircleApi.interceptors.request.use((config) => {
-//   config.baseURL = API_HOSTNAME.endsWith("/") ? API_HOSTNAME : `${API_HOSTNAME}/`;
-//   return config;
-// });
-
-// const apiEndpointUrl = new URL(apiEndpoint).toString();
-// export const appcircleApi = axios.create({
-//   baseURL: apiEndpointUrl,
-// });
-
 export class UploadServiceHeaders {
   static token = "";
 
