@@ -61,8 +61,10 @@ Overall, using testing distribution in mobile DevOps significantly enhances the 
 For more information please refer to the documentation.
 
 - [Setting Up Appcircle Testing Distribution Task in Azure DevOps Pipeline](https://docs.appcircle.io/marketplace/visual-studio-marketplace/testing-distribution)
-  - [Discover Extension]()
-  - [System Requirements]()
-  - [How to Add the Appcircle Testing Distribution Task to Your Pipeline]()
-  - [Leveraging Environment Variables]()
-- [References]()
+  - [System Requirements](https://docs.appcircle.io/marketplace/visual-studio-marketplace/testing-distribution#system-requirements)
+  - [Setup Appcircle Testing Distribution](https://docs.appcircle.io/marketplace/visual-studio-marketplace/testing-distribution#setup-appcircle-testing-distribution)
+  - [How to Get the Appcircle Testing Distribution Extension](https://docs.appcircle.io/marketplace/visual-studio-marketplace/testing-distribution#how-to-get-the-appcircle-testing-distribution-extension)
+  - [How to Add the Appcircle Testing Distribution Task into Your Pipeline](https://docs.appcircle.io/marketplace/visual-studio-marketplace/testing-distribution#how-to-add-the-appcircle-testing-distribution-task-into-your-pipeline)
+  - [Using with Appcircle Self-Hosted](https://docs.appcircle.io/marketplace/visual-studio-marketplace/testing-distribution#using-with-appcircle-self-hosted)
+  - [Leveraging Environment Variables](https://docs.appcircle.io/marketplace/visual-studio-marketplace/testing-distribution#leveraging-environment-variables)
+- [References](https://docs.appcircle.io/marketplace/visual-studio-marketplace/testing-distribution#references)
