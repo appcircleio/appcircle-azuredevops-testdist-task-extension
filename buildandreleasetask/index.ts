@@ -1,25 +1,27 @@
 import * as tl from "azure-pipelines-task-lib/task";
-import axios, { AxiosRequestConfig } from "axios";
+import axios, { Axios, AxiosInstance, AxiosRequestConfig } from "axios";
 import * as fs from "fs";
 import * as FormData from "form-data";
 
 async function run() {
   try {
     const personalAPIToken = tl.getInputRequired("personalAPIToken");
+    const authEndpoint = tl.getInput("authEndpoint") ?? "https://auth.appcircle.io";
+    const apiEndpoint = tl.getInput("apiEndpoint") ?? "https://api.appcircle.io";
     const profileName = tl.getInputRequired("profileName");
     const createProfileIfNotExists =
       tl.getBoolInput("createProfileIfNotExists") ?? false;
     const appPath = tl.getInputRequired("appPath");
     const message = tl.getInput("message") ?? "";
 
-    const validExtensions = [".ipa", ".apk", ".aab", ".zip"];
+    const validExtensions = [".ipa", ".apk", ".aab"];
     const fileExtension = appPath.slice(appPath.lastIndexOf(".")).toLowerCase();
     if (!validExtensions.includes(fileExtension)) {
       tl.setResult(
         tl.TaskResult.Failed,
         `Invalid file extension for '${appPath}'. Please use one of the following:\n` +
           `- Android: .apk or .aab\n` +
-          `- iOS: .ipa or .zip(.xcarchive)`
+          `- iOS: .ipa`
       );
       return;
     }
@@ -33,26 +35,35 @@ async function run() {
       return;
     }
 
-    const loginResponse = await getToken(personalAPIToken);
+    // Create Appcircle API instance
+    const apiEndpointUrl = new URL(apiEndpoint).toString();
+    const appcircleApi = axios.create({
+      baseURL: apiEndpointUrl,
+    });
+
+    const loginResponse = await getToken(personalAPIToken, authEndpoint);
     console.log("Logged in to Appcircle successfully");
     UploadServiceHeaders.token = loginResponse.access_token;
     const profileIdFromName = await getProfileId(
+      appcircleApi,
       profileName,
       createProfileIfNotExists
     );
 
-    const uploadResponse = await uploadArtifact({
-      message,
-      app: appPath,
-      distProfileId: profileIdFromName,
-    });
+    const uploadResponse = await uploadArtifact(
+      appcircleApi,
+      {
+        message,
+        app: appPath,
+        distProfileId: profileIdFromName,
+      });
     if (!uploadResponse.taskId) {
       tl.setResult(
         tl.TaskResult.Failed,
         "Task ID is not found in the upload response"
       );
     } else {
-      await checkTaskStatus(loginResponse.access_token, uploadResponse.taskId);
+      await checkTaskStatus(appcircleApi, loginResponse.access_token, uploadResponse.taskId);
       console.log(`${appPath} uploaded to Appcircle successfully`);
     }
 
@@ -70,13 +81,14 @@ run();
 
 /* API */
 
-export async function getToken(pat: string): Promise<any> {
+export async function getToken(pat: string, authEndpoint: string): Promise<any> {
   const params = new URLSearchParams();
   params.append("pat", pat);
 
   try {
+    const url = new URL('/auth/v1/token', authEndpoint).toString();
     const response = await axios.post(
-      "https://auth.appcircle.io/auth/v1/token",
+      url,
       params.toString(),
       {
         headers: {
@@ -101,11 +113,6 @@ export async function getToken(pat: string): Promise<any> {
   }
 }
 
-const API_HOSTNAME = "https://api.appcircle.io";
-export const appcircleApi = axios.create({
-  baseURL: API_HOSTNAME.endsWith("/") ? API_HOSTNAME : `${API_HOSTNAME}/`,
-});
-
 export class UploadServiceHeaders {
   static token = "";
 
@@ -121,8 +128,8 @@ export class UploadServiceHeaders {
   };
 }
 
-export async function createDistributionProfile(name: string) {
-  const response = await appcircleApi.post(
+export async function createDistributionProfile(api: AxiosInstance, name: string) {
+  const response = await api.post(
     `distribution/v2/profiles`,
     { name: name },
     {
@@ -132,8 +139,8 @@ export async function createDistributionProfile(name: string) {
   return response.data;
 }
 
-export async function getDistributionProfiles() {
-  const distributionProfiles = await appcircleApi.get(
+export async function getDistributionProfiles(api: AxiosInstance) {
+  const distributionProfiles = await api.get(
     `distribution/v2/profiles`,
     {
       headers: UploadServiceHeaders.getHeaders(),
@@ -143,10 +150,11 @@ export async function getDistributionProfiles() {
 }
 
 export async function getProfileId(
+  api: AxiosInstance,
   profileName: string,
   createProfileIfNotExists: boolean
 ): Promise<string> {
-  const profiles = await getDistributionProfiles();
+  const profiles = await getDistributionProfiles(api);
   let profileId: string | null = null;
 
   for (const profile of profiles) {
@@ -163,7 +171,7 @@ export async function getProfileId(
   }
 
   if (profileId === null && createProfileIfNotExists) {
-    const newProfile = await createDistributionProfile(profileName);
+    const newProfile = await createDistributionProfile(api, profileName);
     if (!newProfile || newProfile === null) {
       throw new Error("Error: The new profile could not be created.");
     }
@@ -179,16 +187,18 @@ export async function getProfileId(
   return profileId;
 }
 
-export async function uploadArtifact(options: {
-  message: string;
-  app: string;
-  distProfileId: string;
-}) {
+export async function uploadArtifact(
+  api: AxiosInstance,
+  options: {
+    message: string;
+    app: string;
+    distProfileId: string;
+  }) {
   const data = new FormData();
   data.append("Message", options.message);
   data.append("File", fs.createReadStream(options.app));
 
-  const uploadResponse = await appcircleApi.post(
+  const uploadResponse = await api.post(
     `distribution/v2/profiles/${options.distProfileId}/app-versions`,
     data,
     {
@@ -206,12 +216,13 @@ export async function uploadArtifact(options: {
 }
 
 export async function checkTaskStatus(
+  api: AxiosInstance,
   token: string,
   taskId: string,
   currentAttempt = 0
 ) {
   try {
-    const response = await appcircleApi.get(`/task/v1/tasks/${taskId}`, {
+    const response = await api.get(`/task/v1/tasks/${taskId}`, {
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
@@ -222,7 +233,7 @@ export async function checkTaskStatus(
       (res?.stateValue == 0 || res?.stateValue == 1) &&
       currentAttempt < 100
     ) {
-      return checkTaskStatus(token, taskId, currentAttempt + 1);
+      return checkTaskStatus(api, token, taskId, currentAttempt + 1);
     } else if (res?.stateValue === 2) {
       throw new Error(`Build Upload Task Failed: ${res.stateName}`);
     }

@@ -1,0 +1,5 @@
+{
+    "id": "build-release-task-dev",
+    "name": "Appcircle Testing Distribution - Dev",
+    "public": false
+}
