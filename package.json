@@ -1,19 +1,36 @@
 {
-  "name": "appcircle-azuredevops-testdist-task-extension",
-  "version": "0.0.69",
-  "description": "",
+  "name": "appcircle-azuredevops-testdist-extension",
+  "version": "0.0.70",
+  "description": "NPM Package for Appcircle Testing Distribution Extension",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "package": "tsc ./buildandreleasetask/index.ts",
-    "package:watch": "tsc --watch ./buildandreleasetask/index.ts"
+    "package:watch": "tsc --watch ./buildandreleasetask/index.ts",
+
+    "compile:dev": "webpack --mode development",
+    "start:dev": "webpack-dev-server --mode development"
   },
-  "keywords": [],
-  "author": "",
+  "author": "Appcircle",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/appcircleio/appcircle-azuredevops-testdist-task-extension"
+  },
   "dependencies": {
     "axios": "^1.7.7",
     "azure-devops-extension-sdk": "^4.0.2",
+    "azure-pipelines-task-lib": "^4.17.3",
     "node-fetch": "^3.3.2"
+  },
+  "devDependencies": {
+    "@types/axios": "^0.14.4",
+    "@types/form-data": "^2.5.2",
+    "@types/node": "^22.9.0",
+    "tfx-cli": "^0.15.0",
+    "@webpack-cli/generators": "^3.0.7",
+    "copy-webpack-plugin": "^11.0.0",
+    "webpack-cli": "^5.0.0",
+    "webpack-dev-server": "^4.15.1",
+    "webpack": "^5.88.1"
   }
 }
