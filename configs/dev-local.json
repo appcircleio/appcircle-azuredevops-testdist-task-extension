@@ -1,6 +1,0 @@
-{
-    "id": "build-release-task-dev-local",
-    "name": "Appcircle Testing Distribution - Dev Local",
-    "public": false,
-    "baseUri": "https://localhost:3000"
-}
