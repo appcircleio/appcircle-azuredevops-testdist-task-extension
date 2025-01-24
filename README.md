@@ -36,12 +36,6 @@ Testing distribution is the process of distributing test builds to designated te
 
 Overall, using testing distribution in mobile DevOps significantly enhances the efficiency, security, and effectiveness of the software development process, leading to better products and faster delivery times.
 
-<!-- ### Testing Distribution
-
-In order to share your builds with testers, you can create distribution profiles and assign testing groups to the distribution profiles.
-
-![Distribution Profile](images/distribution-start.png) -->
-
 ```yaml
 - task: AppcircleTestingDistribution@0
   inputs:
