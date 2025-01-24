@@ -44,6 +44,7 @@ else
     echo "Branch $BRANCH_NAME is not configured for release."
     exit 1
 fi
+echo "Configuration: $configuration"
 tfx extension create --manifest-globs vss-extension.json --overrides-file $configuration
 echo
 
