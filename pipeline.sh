@@ -48,7 +48,7 @@ echo
 
 echo "=== Publish Extension ==="
 echo
-echo "tfx extension publish --manifest-globs vss-extension.json --overrides-file $configuration --token $PUBLISH_TOKEN"
+tfx extension publish --manifest-globs vss-extension.json --overrides-file $configuration --token "$PUBLISH_TOKEN"
 echo
 
 exit 0
