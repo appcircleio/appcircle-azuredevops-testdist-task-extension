@@ -36,6 +36,15 @@ async function run() {
       return;
     }
 
+    // Validate if personalAPIToken is provided
+    if (!personalAPIToken || personalAPIToken.trim() === "") {
+      tl.setResult(
+        tl.TaskResult.Failed,
+        "The personalAPIToken is required."
+      );
+      return;
+    }
+
     // Create Appcircle API instance
     const apiEndpointUrl = new URL(apiEndpoint).toString();
     const appcircleApi = axios.create({
