@@ -4,8 +4,8 @@
   "description": "NPM Package for Appcircle Testing Distribution Extension",
   "main": "index.js",
   "scripts": {
-    "package": "tsc ./buildandreleasetask/index.ts",
-    "package:watch": "tsc --watch ./buildandreleasetask/index.ts",
+    "package": "tsc -p ./buildandreleasetask/tsconfig.json",
+    "package:watch": "tsc --watch -p ./buildandreleasetask/tsconfig.json",
 
     "compile:dev": "webpack --mode development",
     "start:dev": "webpack-dev-server --mode development"
