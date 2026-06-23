@@ -188,6 +188,29 @@ export async function getProfileId(
   return profileId;
 }
 
+async function uploadWithRetry(doUpload: () => Promise<any>, maxRetries = 5): Promise<any> {
+  let attempt = 0;
+  let delay = 1000;
+  while (true) {
+    try {
+      return await doUpload();
+    } catch (error: any) {
+      const status = error?.response?.status;
+      const retryable =
+        status === 503 ||
+        error?.code === "ECONNRESET" ||
+        (typeof error?.message === "string" && error.message.includes("socket hang up"));
+      if (!retryable || attempt >= maxRetries) {
+        throw error;
+      }
+      attempt++;
+      const jitter = Math.floor(Math.random() * 300);
+      await new Promise((resolve) => setTimeout(resolve, delay + jitter));
+      delay *= 2;
+    }
+  }
+}
+
 export async function uploadArtifact(
   api: AxiosInstance,
   options: {
@@ -231,27 +254,31 @@ export async function uploadArtifact(
   console.log("Uploading file to Appcircle...");
   let uploadResponse;
   if (httpMethod.toUpperCase() === "POST") {
-    const data = new FormData();
-    for (const [key, value] of Object.entries(signParameters)) {
-      data.append(key, value);
-    }
-    data.append("file", fs.createReadStream(filePath), fileName);
+    uploadResponse = await uploadWithRetry(() => {
+      const data = new FormData();
+      for (const [key, value] of Object.entries(signParameters)) {
+        data.append(key, value);
+      }
+      data.append("file", fs.createReadStream(filePath), fileName);
 
-    uploadResponse = await axios.post(uploadUrl, data, {
-      maxContentLength: Infinity,
-      maxBodyLength: Infinity,
-      headers: {
-        ...data.getHeaders(),
-      },
+      return axios.post(uploadUrl, data, {
+        maxContentLength: Infinity,
+        maxBodyLength: Infinity,
+        headers: {
+          ...data.getHeaders(),
+        },
+      });
     });
   } else if (httpMethod.toUpperCase() === "PUT") {
-    uploadResponse = await axios.put(uploadUrl, fs.readFileSync(filePath), {
-      headers: {
-        "Content-Type": "application/octet-stream",
-      },
-      maxContentLength: Infinity,
-      maxBodyLength: Infinity,
-    });
+    uploadResponse = await uploadWithRetry(() =>
+      axios.put(uploadUrl, fs.readFileSync(filePath), {
+        headers: {
+          "Content-Type": "application/octet-stream",
+        },
+        maxContentLength: Infinity,
+        maxBodyLength: Infinity,
+      })
+    );
   } else {
     throw new Error(`Unsupported upload HTTP method: ${httpMethod}`);
   }
