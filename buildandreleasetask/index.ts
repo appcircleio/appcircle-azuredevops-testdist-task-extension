@@ -1,7 +1,8 @@
 import * as tl from "azure-pipelines-task-lib/task";
 import axios, { Axios, AxiosInstance, AxiosRequestConfig } from "axios";
 import * as fs from "fs";
-import * as FormData from "form-data";
+import FormData = require("form-data");
+import * as path from "path";
 
 async function run() {
   try {
@@ -194,25 +195,92 @@ export async function uploadArtifact(
     app: string;
     distProfileId: string;
   }) {
-  const data = new FormData();
-  data.append("Message", options.message);
-  data.append("File", fs.createReadStream(options.app));
+  const filePath = options.app;
+  const fileName = path.basename(filePath);
+  const fileSize = fs.statSync(filePath).size;
 
-  const uploadResponse = await api.post(
-    `distribution/v2/profiles/${options.distProfileId}/app-versions`,
-    data,
+  // Step 1: Get upload information
+  console.log("Getting file upload information...");
+  const uploadInfoResponse = await api.get<{
+    fileId: string;
+    uploadUrl: string;
+    configuration: {
+      httpMethod: string;
+      signParameters: Record<string, string>;
+    };
+  }>(
+    `distribution/v1/profiles/${options.distProfileId}/app-versions`,
     {
+      params: {
+        action: "uploadInformation",
+        fileName: fileName,
+        fileSize: fileSize,
+      },
+      headers: UploadServiceHeaders.getHeaders(),
+    }
+  );
+  if (uploadInfoResponse.status < 200 || uploadInfoResponse.status >= 300) {
+    throw new Error("Failed to retrieve file upload information with status code: " + uploadInfoResponse.status);
+  }
+  console.log("File upload information retrieved successfully with status code:", uploadInfoResponse.status);
+
+  const { fileId, uploadUrl, configuration } = uploadInfoResponse.data;
+  const { httpMethod, signParameters } = configuration;
+
+  // Step 2: Upload file using the method and parameters from the response
+  console.log("Uploading file to Appcircle...");
+  let uploadResponse;
+  if (httpMethod.toUpperCase() === "POST") {
+    const data = new FormData();
+    for (const [key, value] of Object.entries(signParameters)) {
+      data.append(key, value);
+    }
+    data.append("file", fs.createReadStream(filePath), fileName);
+
+    uploadResponse = await axios.post(uploadUrl, data, {
       maxContentLength: Infinity,
       maxBodyLength: Infinity,
       headers: {
-        ...UploadServiceHeaders.getHeaders(),
         ...data.getHeaders(),
-        "Content-Type": "multipart/form-data;boundary=" + data.getBoundary(),
       },
+    });
+  } else if (httpMethod.toUpperCase() === "PUT") {
+    uploadResponse = await axios.put(uploadUrl, fs.readFileSync(filePath), {
+      headers: {
+        "Content-Type": "application/octet-stream",
+      },
+      maxContentLength: Infinity,
+      maxBodyLength: Infinity,
+    });
+  } else {
+    throw new Error(`Unsupported upload HTTP method: ${httpMethod}`);
+  }
+
+  if (uploadResponse.status < 200 || uploadResponse.status >= 300) {
+    throw new Error("Failed to upload file with status code: " + uploadResponse.status);
+  }
+  console.log("File upload finished successfully with status code:", uploadResponse.status);
+
+  // Step 3: Commit the upload
+  console.log("Committing file upload...");
+  const commitResponse = await api.post<{ taskId: string }>(
+    `distribution/v1/profiles/${options.distProfileId}/app-versions`,
+    {
+      fileId: fileId,
+      fileName: fileName,
+      message: options.message,
+    },
+    {
+      params: { action: "commitFileUpload" },
+      headers: UploadServiceHeaders.getHeaders(),
     }
   );
+  if (commitResponse.status < 200 || commitResponse.status >= 300) {
+    throw new Error("Failed to commit file upload with status code: " + commitResponse.status);
+  }
+  console.log("File upload committed successfully with status code:", commitResponse.status);
 
-  return uploadResponse.data;
+  return commitResponse.data;
 }
 
 export async function checkTaskStatus(
