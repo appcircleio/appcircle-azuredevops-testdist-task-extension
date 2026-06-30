@@ -51,6 +51,9 @@ Overall, using testing distribution in mobile DevOps significantly enhances the 
 - `personalAPIToken`: The Appcircle Personal API token used to authenticate and authorize access to Appcircle services within this extension.
 - `authEndpoint` (optional): Authentication endpoint URL for self-hosted Appcircle installations. Defaults to `https://auth.appcircle.io`.
 - `apiEndpoint` (optional): API endpoint URL for self-hosted Appcircle installations. Defaults to `https://api.appcircle.io`.
+
+> **Self-signed or private CA certificates:** If your self-hosted Appcircle server uses a self-signed certificate (or one issued by a private/internal CA), requests will fail certificate validation. The task does not disable TLS verification. Trust the server's CA on the build agent — set the `NODE_EXTRA_CA_CERTS` environment variable to a PEM file containing the CA certificate, or add the CA to the system certificate store.
+
 - `profileName`: Specifies the profile that will be used for uploading the app.
 - `createProfileIfNotExists` (optional): Ensures that a testing distribution profile is automatically created if it does not already exist; if the profile name already exists, the app will be uploaded to that existing profile instead.
 - `appPath`: Indicates the file path to the application package that will be uploaded to Appcircle Testing Distribution Profile.

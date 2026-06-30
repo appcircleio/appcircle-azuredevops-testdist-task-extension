@@ -1,0 +1,40 @@
+trigger: none
+
+pool:
+  name: Default
+
+variables:
+  - group: 'Appcircle TD Variable Group'
+
+  - name: authEndpoint
+    value: 'https://dev-auth.appcircle.io'
+  - name: apiEndpoint
+    value: 'https://dev-api.appcircle.io'
+  - name: profileName
+    value: 'Azure DevOps Extension Test'
+  - name: apkUrl
+    value: 'https://storage.googleapis.com/appcircle-dev-common/self-hosted/temp/app-release-new.apk'
+  - name: apkPath
+    value: '$(Build.ArtifactStagingDirectory)/app-release-new.apk'
+  - name: message
+    value: 'Test upload from Azure pipeline'
+
+
+steps:
+  # Step 1: Download APK from the given URL
+  - script: |
+      echo "Downloading APK..."
+      curl -L $(apkUrl) -o $(apkPath)
+    displayName: 'Download APK'
+
+  # Step 2: Run the custom task to distribute the APK
+  - task: AppcircleTestingDistribution@0.1.1
+    inputs:
+      personalAPIToken: '$(personalAPIToken)'
+      authEndpoint: '$(authEndpoint)'
+      apiEndpoint: '$(apiEndpoint)'
+      profileName: '$(profileName)'
+      createProfileIfNotExists: true
+      appPath: '$(apkPath)'  # Use the downloaded APK path here
+      message: '$(message)'
+    displayName: 'Distribute APK via Appcircle'
