@@ -2,7 +2,22 @@
 # shellcheck shell=bash
 set -euo pipefail
 
-echo "Publish Token: $(echo "${PUBLISH_TOKEN:-}" | cut -c1-3)...***"
+# Release pipeline for the Appcircle Testing Distribution Azure DevOps extension.
+#
+# Policy (aligned with the other Appcircle plugins, adapted to the Visual Studio
+# Marketplace, which does NOT support pre-release/beta versions):
+#   * Only a push/merge to the default branch (main) publishes a PRODUCTION version.
+#   * There is no beta channel.
+#   * The version is derived from the latest git tag (vX.Y.Z) — tagging is manual.
+#
+# The Jenkins agent has Docker but not Node/yarn/tfx on PATH, so the build and
+# publish steps run inside a node container (mirrors the other Appcircle plugins).
+
+if [ -n "${PUBLISH_TOKEN:-}" ]; then
+    echo "Publish token configured: yes"
+else
+    echo "Publish token configured: no"
+fi
 
 # --- Only main publishes. No beta. ------------------------------------------
 if [ "${BRANCH_NAME:-}" != "main" ]; then
@@ -10,37 +25,49 @@ if [ "${BRANCH_NAME:-}" != "main" ]; then
     exit 0
 fi
 
-echo "=== Runtime Dependencies ==="
-node -v
-yarn -v
-command -v tfx >/dev/null 2>&1 && echo "tfx: OK"
-
 # --- Version source of truth = latest git tag (manual tagging) --------------
-git fetch --tags --force || true
-LATEST_TAG="$(git describe --tags --abbrev=0 2>/dev/null || true)"
+# git runs on the agent (available there); the toolchain runs in Docker below.
+git fetch --tags --force
+LATEST_TAG="$(git tag --list --sort=-version:refname | grep -E '^v?[0-9]+\.[0-9]+\.[0-9]+$' | head -n1)"
 VERSION="${LATEST_TAG#v}"
-if ! echo "$VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
-    echo "ERROR: latest git tag '${LATEST_TAG:-<none>}' is not a clean vX.Y.Z." >&2
+if [ -z "$VERSION" ] || ! echo "$VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+    echo "ERROR: no clean vX.Y.Z git tag found (latest: '${LATEST_TAG:-<none>}')." >&2
     exit 1
 fi
 echo "Publishing version: $VERSION (from tag ${LATEST_TAG})"
+
+# --- Build + publish inside a node container --------------------------------
+# (agent has Docker but no Node/yarn/tfx; tsc/tfx are installed globally here)
+docker run --rm \
+    -v "$PWD":/work -w /work \
+    -e VERSION="$VERSION" \
+    -e PUBLISH_TOKEN="$PUBLISH_TOKEN" \
+    node:18 bash -s <<'DOCKER'
+set -euo pipefail
+
+echo "=== Runtime Dependencies ==="
+node -v
+yarn -v
+npm install -g typescript@5 tfx-cli >/dev/null 2>&1
+tfx version
 
 echo "=== Install Dependencies ==="
 yarn install
 (cd buildandreleasetask && yarn install)
 
 # --- Inject the git-tag version into the manifests --------------------------
+echo "=== Set manifest version ==="
 node -e '
 const fs = require("fs");
-const v = process.argv[1].split(".");
+const v = process.env.VERSION.split(".");
 const task = JSON.parse(fs.readFileSync("buildandreleasetask/task.json"));
 task.version = { Major: +v[0], Minor: +v[1], Patch: +v[2] };
 fs.writeFileSync("buildandreleasetask/task.json", JSON.stringify(task, null, 2) + "\n");
 const ext = JSON.parse(fs.readFileSync("vss-extension.json"));
-ext.version = process.argv[1];
+ext.version = process.env.VERSION;
 fs.writeFileSync("vss-extension.json", JSON.stringify(ext, null, 2) + "\n");
-console.log("Manifests set to " + process.argv[1]);
-' "$VERSION"
+console.log("Manifests set to " + process.env.VERSION);
+'
 
 echo "=== Build Package ==="
 yarn package
@@ -48,5 +75,6 @@ yarn package
 echo "=== Create & Publish Extension (public production) ==="
 tfx extension create --manifest-globs vss-extension.json --overrides-file configs/release.json
 tfx extension publish --manifest-globs vss-extension.json --overrides-file configs/release.json --token "$PUBLISH_TOKEN"
+DOCKER
 
 exit 0
