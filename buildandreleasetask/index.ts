@@ -14,6 +14,7 @@ async function run() {
       tl.getBoolInput("createProfileIfNotExists") ?? false;
     const appPath = tl.getInputRequired("appPath");
     const message = tl.getInput("message") ?? "";
+    const subOrganizationName = tl.getInput("subOrganizationName");
 
     const validExtensions = [".ipa", ".apk", ".aab"];
     const fileExtension = appPath.slice(appPath.lastIndexOf(".")).toLowerCase();
@@ -44,7 +45,24 @@ async function run() {
 
     const loginResponse = await getToken(personalAPIToken, authEndpoint);
     console.log("Logged in to Appcircle successfully");
-    UploadServiceHeaders.token = loginResponse.access_token;
+    let accessToken = loginResponse.access_token;
+    UploadServiceHeaders.token = accessToken;
+
+    if (subOrganizationName) {
+      const subOrganizationId = await getOrganizationId(
+        appcircleApi,
+        subOrganizationName
+      );
+      const subLoginResponse = await getToken(
+        personalAPIToken,
+        authEndpoint,
+        subOrganizationId
+      );
+      accessToken = subLoginResponse.access_token;
+      UploadServiceHeaders.token = accessToken;
+      console.log(`Switched to sub-organization: ${subOrganizationName}`);
+    }
+
     const profileIdFromName = await getProfileId(
       appcircleApi,
       profileName,
@@ -64,7 +82,7 @@ async function run() {
         "Task ID is not found in the upload response"
       );
     } else {
-      await checkTaskStatus(appcircleApi, loginResponse.access_token, uploadResponse.taskId);
+      await checkTaskStatus(appcircleApi, accessToken, uploadResponse.taskId);
       console.log(`${appPath} uploaded to Appcircle successfully`);
     }
 
@@ -82,12 +100,21 @@ run();
 
 /* API */
 
-export async function getToken(pat: string, authEndpoint: string): Promise<any> {
+export async function getToken(
+  pat: string,
+  authEndpoint: string,
+  subOrganizationId?: string
+): Promise<any> {
   const params = new URLSearchParams();
   params.append("pat", pat);
 
+  const tokenPath = subOrganizationId ? "/auth/v2/token" : "/auth/v1/token";
+  if (subOrganizationId) {
+    params.append("subOrganizationId", subOrganizationId);
+  }
+
   try {
-    const url = new URL('/auth/v1/token', authEndpoint).toString();
+    const url = new URL(tokenPath, authEndpoint).toString();
     const response = await axios.post(
       url,
       params.toString(),
@@ -112,6 +139,24 @@ export async function getToken(pat: string, authEndpoint: string): Promise<any> 
     }
     throw error;
   }
+}
+
+export async function getOrganizationId(
+  api: AxiosInstance,
+  name: string
+): Promise<string> {
+  const response = await api.get(`identity/v1/organizations`, {
+    headers: UploadServiceHeaders.getHeaders(),
+  });
+  const organizations: Array<{ id: string; name: string }> =
+    response.data?.data ?? [];
+  const organization = organizations.find((org) => org.name === name);
+  if (!organization) {
+    throw new Error(
+      `Sub-organization '${name}' could not be found or is not accessible with this token.`
+    );
+  }
+  return organization.id;
 }
 
 export class UploadServiceHeaders {

@@ -42,6 +42,7 @@ Overall, using testing distribution in mobile DevOps significantly enhances the 
     personalAPIToken: $(AC_PERSONAL_API_TOKEN)
     authEndpoint: $(AC_AUTH_ENDPOINT)
     apiEndpoint: $(AC_API_ENDPOINT)
+    subOrganizationName: $(AC_SUB_ORGANIZATION_NAME)
     profileName: $(AC_PROFILE_NAME)
     createProfileIfNotExists: $(AC_CREATE_PROFILE_IF_NOT_EXISTS)
     appPath: $(AC_APP_PATH)
@@ -51,6 +52,7 @@ Overall, using testing distribution in mobile DevOps significantly enhances the 
 - `personalAPIToken`: The Appcircle Personal API token used to authenticate and authorize access to Appcircle services within this extension.
 - `authEndpoint` (optional): Authentication endpoint URL for self-hosted Appcircle installations. Defaults to `https://auth.appcircle.io`.
 - `apiEndpoint` (optional): API endpoint URL for self-hosted Appcircle installations. Defaults to `https://api.appcircle.io`.
+- `subOrganizationName` (optional): Sub-organization name to distribute into. Leave empty to use the root organization. Use this when your Personal API Token belongs to the root organization but the target distribution profile lives in a sub-organization.
 
 > **Self-signed or private CA certificates:** If your self-hosted Appcircle server uses a self-signed certificate (or one issued by a private/internal CA), requests will fail certificate validation. The task does not disable TLS verification. Trust the server's CA on the build agent — set the `NODE_EXTRA_CA_CERTS` environment variable to a PEM file containing the CA certificate, or add the CA to the system certificate store.
 
