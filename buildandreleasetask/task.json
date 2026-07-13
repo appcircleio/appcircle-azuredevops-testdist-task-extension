@@ -3,7 +3,7 @@
   "id": "ffeb39c1-fd80-4333-b572-9de0f1e3dae1",
   "name": "AppcircleTestingDistribution",
   "friendlyName": "Appcircle Testing Distribution",
-  "description": "Efficiently distribute application builds to users or testing groups using Appcircle's robust platform.",
+  "description": "Appcircle Testing Distribution enables the binary distribution of Android (.apk, .aab) and iOS (.ipa) files, allowing teams to create test groups and share builds using enterprise authentication methods such as SSO and LDAP.",
   "helpMarkDown": "",
   "category": "Utility",
   "author": "appcircle",
