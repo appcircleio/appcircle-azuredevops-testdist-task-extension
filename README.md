@@ -6,7 +6,7 @@ Appcircle's test distribution extension enables developers to create test groups
 
 ## Exploring Testing Distribution
 
-Testing distribution is the process of distributing test builds to designated test groups or individuals. This process allows developers to gather quick feedback, identify bugs, and ensure the quality of software applications before releasing them to customers. Appcircle's test distribution module enables developers to create test groups and share builds with them, utilizing enterprise-grade authentication methods.
+Testing distribution is the process of distributing test builds to designated test groups or individuals. This process allows developers to gather quick feedback, identify bugs, and ensure the quality of software applications before releasing them to customers. Appcircle's Testing Distribution module enables developers to create test groups and share builds with them, utilizing enterprise-grade authentication methods.
 
 ## Benefits of Using Testing Distribution
 
@@ -34,9 +34,8 @@ Testing distribution is the process of distributing test builds to designated te
    - **Better Quality Control:** Ensures that end users receive a more stable and polished product.
    - **Customer Satisfaction:** By delivering higher quality software, customer satisfaction and trust in the product increase.
 
-**Re-Sign and Auto-Resign**
-
-- **Update Without Rebuilding:** Re-sign iOS and Android binaries with updated signing identities, manually or automatically, and keep distributing without a new build.
+9. **Re-Sign and Auto-Resign:**
+   - **Update Without Rebuilding:** Re-sign iOS and Android binaries with updated signing identities, manually or automatically, and keep distributing without a new build.
 
 Overall, using testing distribution in mobile DevOps significantly enhances the efficiency, security, and effectiveness of the software development process, leading to better products and faster delivery times.
 
