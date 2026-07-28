@@ -1,16 +1,16 @@
 ## Appcircle Testing Distribution
 
-Appcircle simplifies the distribution of builds to test teams with an extensive platform for managing and tracking applications, versions, testers, and teams. Appcircle integrates with enterprise authentication mechanisms such as LDAP and SSO, ensuring secure distribution of testing packages. Learn more about Appcircle testing distribution. Learn more about [Appcircle testing distribution](https://appcircle.io/testing-distribution?&utm_source=azure&utm_medium=product&utm_campaign=testing_distribution)
+Appcircle Testing Distribution enables the binary distribution of Android (.apk, .aab) and iOS (.ipa) files, allowing teams to create test groups and share builds using enterprise authentication methods such as SSO and LDAP. Learn more about [Appcircle testing distribution](https://appcircle.io/testing-distribution?&utm_source=azure&utm_medium=product&utm_campaign=testing_distribution)
 
 Appcircle's test distribution extension enables developers to create test groups and share builds with them, utilizing enterprise-grade authentication methods. With the Visual Studio Extension, this module will be accessible directly from the Azure DevOps pipeline.
 
 ## Exploring Testing Distribution
 
-Testing distribution is the process of distributing test builds to designated test groups or individuals. This process allows developers to gather quick feedback, identify bugs, and ensure the quality of software applications before releasing them to customers. Appcircle's test distribution module enables developers to create test groups and share builds with them, utilizing enterprise-grade authentication methods.
+Testing distribution is the process of distributing test builds to designated test groups or individuals. This process allows developers to gather quick feedback, identify bugs, and ensure the quality of software applications before releasing them to customers. Appcircle's Testing Distribution module enables developers to create test groups and share builds with them, utilizing enterprise-grade authentication methods.
 
 ## Benefits of Using Testing Distribution
 
-1. **Simplified Binary Distribution**.
+1. **Simplified Binary Distribution:**
    - **Skip Traditional Stores:** Share IPA, APK, AAB files directly, avoiding the need to use App Store TestFlight or Google Play Internal Testing.
 2. **Streamlined Workflow:**
    - **Automated Processes:** Platforms like Appcircle automate the distribution process, saving time and reducing manual effort.
@@ -34,7 +34,12 @@ Testing distribution is the process of distributing test builds to designated te
    - **Better Quality Control:** Ensures that end users receive a more stable and polished product.
    - **Customer Satisfaction:** By delivering higher quality software, customer satisfaction and trust in the product increase.
 
+9. **Re-Sign and Auto-Resign:**
+   - **Update Without Rebuilding:** Re-sign iOS and Android binaries with updated signing identities, manually or automatically, and keep distributing without a new build.
+
 Overall, using testing distribution in mobile DevOps significantly enhances the efficiency, security, and effectiveness of the software development process, leading to better products and faster delivery times.
+
+## How to use Appcircle Testing Distribution Extension
 
 ```yaml
 - task: AppcircleTestingDistribution@0
@@ -42,6 +47,7 @@ Overall, using testing distribution in mobile DevOps significantly enhances the 
     personalAPIToken: $(AC_PERSONAL_API_TOKEN)
     authEndpoint: $(AC_AUTH_ENDPOINT)
     apiEndpoint: $(AC_API_ENDPOINT)
+    subOrganizationName: $(AC_SUB_ORGANIZATION_NAME)
     profileName: $(AC_PROFILE_NAME)
     createProfileIfNotExists: $(AC_CREATE_PROFILE_IF_NOT_EXISTS)
     appPath: $(AC_APP_PATH)
@@ -51,8 +57,9 @@ Overall, using testing distribution in mobile DevOps significantly enhances the 
 - `personalAPIToken`: The Appcircle Personal API token used to authenticate and authorize access to Appcircle services within this extension.
 - `authEndpoint` (optional): Authentication endpoint URL for self-hosted Appcircle installations. Defaults to `https://auth.appcircle.io`.
 - `apiEndpoint` (optional): API endpoint URL for self-hosted Appcircle installations. Defaults to `https://api.appcircle.io`.
+- `subOrganizationName` (optional): Sub-organization name to distribute into. Leave empty to use the root organization. Use this when your Personal API Token belongs to the root organization but the target distribution profile lives in a sub-organization.
 
-> **Self-signed or private CA certificates:** If your self-hosted Appcircle server uses a self-signed certificate (or one issued by a private/internal CA), requests will fail certificate validation. The task does not disable TLS verification. Trust the server's CA on the build agent — set the `NODE_EXTRA_CA_CERTS` environment variable to a PEM file containing the CA certificate, or add the CA to the system certificate store.
+> **Self-signed or private CA certificates:** If your self-hosted Appcircle server uses a self-signed certificate (or one issued by a private/internal CA), requests will fail certificate validation. The task does not disable TLS verification. Trust the server's CA on the build agent: set the `NODE_EXTRA_CA_CERTS` environment variable to a PEM file containing the CA certificate, or add the CA to the system certificate store.
 
 - `profileName`: Specifies the profile that will be used for uploading the app.
 - `createProfileIfNotExists` (optional): Ensures that a testing distribution profile is automatically created if it does not already exist; if the profile name already exists, the app will be uploaded to that existing profile instead.
