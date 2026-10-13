@@ -10,7 +10,7 @@
   "version": {
     "Major": 0,
     "Minor": 2,
-    "Patch": 1
+    "Patch": 2
   },
   "visibility": ["Build", "Release"],
   "instanceNameFormat": "Appcircle Testing Distribution",
@@ -81,6 +81,9 @@
     }
   ],
   "execution": {
+    "Node16": {
+      "target": "index.js"
+    },
     "Node20_1": {
       "target": "index.js"
     }
