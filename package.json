@@ -4,6 +4,7 @@
   "description": "NPM Package for Appcircle Testing Distribution Extension",
   "main": "index.js",
   "scripts": {
+    "test": "node --test tests/taskStatus.test.js",
     "package": "tsc -p ./buildandreleasetask/tsconfig.json",
     "package:watch": "tsc --watch -p ./buildandreleasetask/tsconfig.json",
 

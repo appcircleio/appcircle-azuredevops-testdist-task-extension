@@ -3,6 +3,12 @@ import axios, { Axios, AxiosInstance, AxiosRequestConfig } from "axios";
 import * as fs from "fs";
 import FormData = require("form-data");
 import * as path from "path";
+import {
+  TASK_REQUEST_TIMEOUT_MS,
+  TaskPollOptions,
+  TaskStatusReply,
+  waitForTaskCompletion,
+} from "./taskStatus";
 
 async function run() {
   try {
@@ -81,10 +87,10 @@ async function run() {
         tl.TaskResult.Failed,
         "Task ID is not found in the upload response"
       );
-    } else {
-      await checkTaskStatus(appcircleApi, accessToken, uploadResponse.taskId);
-      console.log(`${appPath} uploaded to Appcircle successfully`);
+      return;
     }
+    await checkTaskStatus(appcircleApi, accessToken, uploadResponse.taskId);
+    console.log(`${appPath} uploaded to Appcircle successfully`);
 
     tl.setResult(
       tl.TaskResult.Succeeded,
@@ -355,28 +361,51 @@ export async function uploadArtifact(
   return commitResponse.data;
 }
 
+function taskStatusReader(
+  api: AxiosInstance,
+  headers: () => AxiosRequestConfig["headers"],
+  timeoutMs: number
+) {
+  return async (taskId: string): Promise<TaskStatusReply> => {
+    try {
+      const url = `/task/v1/tasks/${encodeURIComponent(taskId)}`;
+      const response = await api.get(url, {
+        headers: headers(),
+        timeout: timeoutMs,
+        validateStatus: () => true,
+      });
+      const body =
+        response.data && typeof response.data === "object"
+          ? response.data
+          : undefined;
+      return { httpStatus: response.status, body };
+    } catch {
+      return { httpStatus: 0 };
+    }
+  };
+}
+
 export async function checkTaskStatus(
   api: AxiosInstance,
   token: string,
   taskId: string,
-  currentAttempt = 0
-) {
+  options?: TaskPollOptions
+): Promise<void> {
+  const readStatus = taskStatusReader(
+    api,
+    () => ({
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    }),
+    options?.requestTimeoutMs ?? TASK_REQUEST_TIMEOUT_MS
+  );
   try {
-    const response = await api.get(`/task/v1/tasks/${taskId}`, {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    const res = response.data;
-    if (
-      (res?.stateValue == 0 || res?.stateValue == 1) &&
-      currentAttempt < 100
-    ) {
-      return checkTaskStatus(api, token, taskId, currentAttempt + 1);
-    } else if (res?.stateValue === 2) {
-      throw new Error(`Build Upload Task Failed: ${res.stateName}`);
-    }
+    await waitForTaskCompletion(
+      taskId,
+      readStatus,
+      (_id, stateName) => `Build Upload Task Failed: ${stateName}`,
+      options
+    );
   } catch (error) {
     if (error instanceof Error) {
       throw new Error(`Error checking task status: ${error.message}`);
